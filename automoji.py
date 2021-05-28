@@ -1,4 +1,3 @@
-from decouple import config
 import discord
 from discord.ext import commands
 
@@ -8,7 +7,8 @@ class Automoji(commands.Bot):
 	def __init__(self, *args, **kwargs):
 		super().__init__(*args, **kwargs)
 
-		# Creates a dictionary, where the keys are Users, and the values are PartialEmojis.
+		# Constructs a dictionary, where the keys are Users, and the values are strings 
+		# representing emojis.
 		self.user_emojis = {}
 	
 	

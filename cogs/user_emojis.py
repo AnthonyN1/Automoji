@@ -1,4 +1,3 @@
-import discord
 from discord.ext import commands
 
 
@@ -14,17 +13,17 @@ class UserEmojis(commands.Cog):
 	# react with that emoji.
 	@commands.command(name="addUserEmoji")
 	async def add_user_emoji(self, ctx, emoji: str):
-		await ctx.message.add_reaction(self.thumbs_up)
-
 		self.bot.user_emojis[ctx.author] = emoji
+
+		await ctx.message.add_reaction(self.thumbs_up)
 	
 	# Command: !removeUserEmoji
 	# Removes the user's emoji. 
 	@commands.command(name="removeUserEmoji")
 	async def remove_user_emoji(self, ctx):
-		await ctx.message.add_reaction(self.thumbs_up)
-
 		self.bot.user_emojis.pop(ctx.author)
+
+		await ctx.message.add_reaction(self.thumbs_up)
 
 
 # Required function for an extension.

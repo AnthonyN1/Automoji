@@ -23,7 +23,7 @@ def main():
 			print("Something went wrong. The bot was unable to load an extension.")
 			sys.exit(1)
 
-	# Runs the bot using the token (specified as an environment variable).
+	# Runs the bot using the token specified as an environment variable.
 	token = config("TOKEN")
 	try:
 		bot.run(token)
