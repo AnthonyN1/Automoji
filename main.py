@@ -1,4 +1,4 @@
-from decouple import config
+import decouple
 import discord
 from discord.ext import commands
 import sys
@@ -19,16 +19,29 @@ def main():
 	for ext in extensions:
 		try:
 			bot.load_extension(ext)
-		except commands.ExtensionFailed:
-			print("Something went wrong. The bot was unable to load an extension.")
-			sys.exit(1)
+		except commands.ExtensionError as e:
+			print(f"WARNING: unable to load the extension {e.name}")
 
 	# Runs the bot using the token specified as an environment variable.
-	token = config("TOKEN")
+	try:
+		token = decouple.config("TOKEN")
+	except decouple.UndefinedValueError:
+		print("ERROR: environment variable 'TOKEN' not set\nExiting...")
+		sys.exit(1)
+	
 	try:
 		bot.run(token)
-	except (discord.LoginFailure, discord.HTTPException):
-		print("Something went wrong. The bot was unable to login successfully.")
+	except discord.LoginFailure:
+		print("ERROR: unable to login using the provided credentials\nExiting...")
+		sys.exit(1)
+	except discord.HTTPException as e:
+		print(f"ERROR: an HTTP exception has occured (status code {e.status})\nExiting...")
+		sys.exit(1)
+	except discord.GatewayNotFound:
+		print("ERROR: unable to find the gateway hub\nExiting...")
+		sys.exit(1)
+	except discord.ConnectionClosed as e:
+		print(f"ERROR: connection closed ({e.reason})\nExiting...")
 		sys.exit(1)
 
 
