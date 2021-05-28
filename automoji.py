@@ -37,7 +37,7 @@ class Automoji(commands.Bot):
 		# Reacts to the user's message with their emoji.
 		try:
 			await message.add_reaction(em)
-		except Exception as e:
+		except discord.DiscordException as e:
 			self.add_reaction_error(e)
 	
 

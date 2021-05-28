@@ -1,3 +1,4 @@
+import discord
 from discord.ext import commands
 
 
@@ -24,7 +25,7 @@ class UserEmojis(commands.Cog):
 		# Reacts to the user's message.
 		try:
 			await ctx.message.add_reaction(self.robot_emoji)
-		except Exception as e:
+		except discord.DiscordException as e:
 			self.bot.add_reaction_error(e)
 	
 	# Explicitly caught exceptions: MissingRequiredArgument, TooManyArguments
@@ -42,7 +43,7 @@ class UserEmojis(commands.Cog):
 
 		try:
 			await ctx.message.add_reaction(self.robot_emoji)
-		except Exception as e:
+		except discord.DiscordException as e:
 			self.bot.add_reaction_error(e)
 
 
