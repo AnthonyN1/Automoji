@@ -73,16 +73,3 @@ class Automoji(commands.Bot):
 		except KeyError:
 			# If the user doesn't have an emoji, don't do anything.
 			return
-
-
-def main():
-	intents = discord.Intents.default()
-	intents.members = True
-
-	bot = Automoji(command_prefix="!", intents=intents)
-
-	token = config("TOKEN")
-	bot.run(token)
-
-if __name__ == "__main__":
-	main()
