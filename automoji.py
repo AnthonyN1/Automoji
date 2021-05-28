@@ -13,14 +13,14 @@ class Automoji(commands.Bot):
 	
 	
 	async def on_message(self, message: discord.Message):
-		await self.process_commands(message)
-
 		# Avoids the bot recursing through its own messages.
 		if message.author.id == self.user.id:
 			return
 		
 		# Reacts to the user's message with their emoji.
 		await self.react_user_emoji(message)
+
+		await self.process_commands(message)
 	
 	
 	# Reacts to a user's message with their emoji.
