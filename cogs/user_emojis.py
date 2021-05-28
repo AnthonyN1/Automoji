@@ -50,6 +50,8 @@ class UserEmojis(commands.Cog):
 				await ctx.send("Invalid number of arguments. Please see '!help addUserEmoji'")
 			except discord.HTTPException as e:
 				self.bot.send_error(e)
+		else:
+			print(f"Caught unexpected exception at add_user_emoji(): {type(error)}")
 	
 
 	# Command: !removeUserEmoji
@@ -80,6 +82,8 @@ class UserEmojis(commands.Cog):
 				await ctx.send("Invalid number of arguments. Please see '!help removeUserEmoji'")
 			except discord.HTTPException as e:
 				self.bot.send_error(e)
+		else:
+			print(f"Caught unexpected exception at remove_user_emoji(): {type(error)}")
 
 
 # Required function for an extension.
