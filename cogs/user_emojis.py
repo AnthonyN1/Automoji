@@ -12,7 +12,7 @@ class UserEmojis(commands.Cog):
 	# Assigns the user to the specified emoji. For every message the user sends, the bot will 
 	# react with that emoji.
 	@commands.command(name="addUserEmoji")
-	async def add_user_emoji(self, ctx, emoji: str):
+	async def add_user_emoji(self, ctx: commands.Context, emoji: str):
 		self.bot.user_emojis[ctx.author] = emoji
 
 		try:
@@ -23,7 +23,7 @@ class UserEmojis(commands.Cog):
 	# Command: !removeUserEmoji
 	# Removes the user's emoji. 
 	@commands.command(name="removeUserEmoji")
-	async def remove_user_emoji(self, ctx):
+	async def remove_user_emoji(self, ctx: commands.Context):
 		self.bot.user_emojis.pop(ctx.author)
 
 		try:
