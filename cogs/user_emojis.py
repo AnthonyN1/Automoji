@@ -23,6 +23,15 @@ class UserEmojis(commands.Cog):
 			
 			return
 		
+		# If the user already has an emoji, sends an error message.
+		if ctx.author in self.bot.user_emojis:
+			try:
+				await ctx.send("You already have an emoji! Please use '!removeUserEmoji' first.")
+			except discord.HTTPException as e:
+				self.bot.send_error(e)
+			
+			return
+		
 		# Adds the user and their emoji to the dictionary.
 		self.bot.user_emojis[ctx.author] = arg
 
