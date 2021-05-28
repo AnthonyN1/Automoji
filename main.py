@@ -1,6 +1,6 @@
 from decouple import config
 import discord
-import discord.ext
+from discord.ext import commands
 import sys
 
 from automoji import Automoji
@@ -13,6 +13,15 @@ def main():
 
 	# Initializes the bot.
 	bot = Automoji(command_prefix="!", intents=intents)
+
+	# Loads extensions into the bot.
+	extensions = ["cogs.user_emojis"]
+	for ext in extensions:
+		try:
+			bot.load_extension(ext)
+		except commands.ExtensionFailed:
+			print("Something went wrong. The bot was unable to load an extension.")
+			sys.exit(1)
 
 	# Runs the bot using the token (specified as an environment variable).
 	token = config("TOKEN")
