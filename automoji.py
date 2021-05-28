@@ -58,6 +58,18 @@ class Automoji(commands.Bot):
 		elif isinstance(error, discord.InvalidArgument):
 			print("WARNING: invalid argument when reacting with an emoji")
 	
+	# Prints warning messages to the console based on the type of exception caught when sending a 
+	# message.
+	def send_error(self, error: discord.HTTPException):
+		if isinstance(error, discord.Forbidden):
+			print("WARNING: received status code 403 (Forbidden)")
+			print("         unable to send a message")
+			print("         requires permission 'send_messages'")
+		else:
+			print(f"WARNING: an HTTP exception has occured (status code {error.status})")
+			print("         unable to send a message.")
+	
+	
 	# Determines if 'arg' is a valid emoji.
 	# A valid emoji can be: (1) unicode, (2) custom to the current guild, or (3) custom to a guild 
 	# outside the current one (e.g. Discord Nitro).

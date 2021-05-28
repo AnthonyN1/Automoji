@@ -16,7 +16,11 @@ class UserEmojis(commands.Cog):
 	async def add_user_emoji(self, ctx: commands.Context, arg: str):
 		# If 'arg' isn't an emoji, sends an error message.
 		if not self.bot.is_emoji(ctx.guild, arg):
-			await ctx.send("Invalid argument. Are you sure that's an emoji?")
+			try:
+				await ctx.send("Invalid argument. Are you sure that's an emoji?")
+			except discord.HTTPException as e:
+				self.bot.send_error(e)
+			
 			return
 		
 		# Adds the user and their emoji to the dictionary.
@@ -32,7 +36,10 @@ class UserEmojis(commands.Cog):
 	@add_user_emoji.error
 	async def add_user_emoji_error(self, ctx: commands.Context, error: commands.CommandError):
 		if isinstance(error, (commands.MissingRequiredArgument, commands.TooManyArguments)):
-			await ctx.send("Invalid number of arguments. Please see '!help addUserEmoji'")
+			try:
+				await ctx.send("Invalid number of arguments. Please see '!help addUserEmoji'")
+			except discord.HTTPException as e:
+				self.bot.send_error(e)
 	
 
 	# Command: !removeUserEmoji
