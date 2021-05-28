@@ -1,5 +1,6 @@
 import discord
 from discord.ext import commands
+from discord.ext.commands.core import command
 
 
 class UserEmojis(commands.Cog):
@@ -55,12 +56,30 @@ class UserEmojis(commands.Cog):
 	# Unassigns a user from their emoji. 
 	@commands.command(name="removeUserEmoji")
 	async def remove_user_emoji(self, ctx: commands.Context):
+		# If the user doesn't have an emoji, sends an error message.
+		if ctx.author not in self.bot.user_emojis:
+			try:
+				await ctx.send("You don't have an emoji to remove!")
+			except discord.HTTPException as e:
+				self.bot.send_error(e)
+		
+		# Removes the user from the dictionary.
 		self.bot.user_emojis.pop(ctx.author)
 
+		# Reacts to the user's message.
 		try:
 			await ctx.message.add_reaction(self.robot_emoji)
 		except discord.DiscordException as e:
 			self.bot.add_reaction_error(e)
+	
+	# Explicitly caught exceptions: TooManyArguments
+	@remove_user_emoji.error
+	async def remove_user_emoji_error(self, ctx: commands.Context, error: commands.CommandError):
+		if isinstance(error, commands.TooManyArguments):
+			try:
+				await ctx.send("Invalid number of arguments. Please see '!help removeUserEmoji'")
+			except discord.HTTPException as e:
+				self.bot.send_error(e)
 
 
 # Required function for an extension.
