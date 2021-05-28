@@ -1,5 +1,6 @@
 import discord
 from discord.ext import commands
+import emoji
 
 
 class Automoji(commands.Bot):
@@ -28,14 +29,14 @@ class Automoji(commands.Bot):
 		try:
 			# Gets the user's emoji.
 			user = message.author
-			emoji = self.user_emojis[user]
+			em = self.user_emojis[user]
 		except KeyError:
 			# If the user doesn't have an emoji, don't do anything.
 			return
 		
 		# Reacts to the user's message with their emoji.
 		try:
-			await message.add_reaction(emoji)
+			await message.add_reaction(em)
 		except Exception as e:
 			self.add_reaction_error(e)
 	
@@ -54,3 +55,10 @@ class Automoji(commands.Bot):
 			print("         unable to react with an emoji.")
 		elif isinstance(error, discord.InvalidArgument):
 			print("WARNING: invalid argument when reacting with an emoji")
+	
+	def is_emoji(self, guild: discord.Guild, arg: str):
+		if emoji.emoji_count(arg) == 1: return True
+		
+		if (guild != None) and (any(arg == str(em) for em in guild.emojis)): return True
+
+		return False

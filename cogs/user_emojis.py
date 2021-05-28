@@ -11,15 +11,30 @@ class UserEmojis(commands.Cog):
 	# Command: !addUserEmoji <emoji>
 	# Assigns the user to the specified emoji. For every message the user sends, the bot will 
 	# react with that emoji.
-	@commands.command(name="addUserEmoji")
-	async def add_user_emoji(self, ctx: commands.Context, emoji: str):
-		self.bot.user_emojis[ctx.author] = emoji
+	@commands.command(name="addUserEmoji", ignore_extra=False)
+	async def add_user_emoji(self, ctx: commands.Context, arg: str):
+		print(arg)
+		# If 'arg' isn't an emoji, sends an error message.
+		if not self.bot.is_emoji(ctx.guild, arg):
+			await ctx.send("Invalid argument. Are you sure that's an emoji?")
+			return
+		
+		# Adds to the dictionary.
+		self.bot.user_emojis[ctx.author] = arg
 
+		# Reacts to the user's message.
 		try:
 			await ctx.message.add_reaction(self.robot_emoji)
 		except Exception as e:
 			self.bot.add_reaction_error(e)
 	
+	# Explicitly caught exceptions: MissingRequiredArgument, TooManyArguments
+	@add_user_emoji.error
+	async def add_user_emoji_error(self, ctx: commands.Context, error: commands.CommandError):
+		if isinstance(error, (commands.MissingRequiredArgument, commands.TooManyArguments)):
+			await ctx.send("Invalid number of arguments. Please see '!help addUserEmoji'")
+	
+
 	# Command: !removeUserEmoji
 	# Removes the user's emoji. 
 	@commands.command(name="removeUserEmoji")
