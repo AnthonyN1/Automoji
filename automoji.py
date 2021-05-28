@@ -10,6 +10,7 @@ class Automoji(commands.Bot):
 
 		# Creates a dictionary, where the keys are Users, and the values are PartialEmojis.
 		self.user_emojis = {}
+
 		self.ue_msg = None
 	
 
@@ -50,13 +51,11 @@ class Automoji(commands.Bot):
 		if user in self.user_emojis:
 			prev_emoji = self.user_emojis[user]
 			await self.ue_msg.remove_reaction(prev_emoji, user)
-		
-		# Adds the User and their PartialEmoji to the dictionary.
+
 		self.user_emojis[user] = emoji
 	
 	# Removes from the user_emojis dictionary when a user removes their reaction from ue_msg.
 	def remove_user_emoji(self, payload: discord.RawReactionActionEvent):
-		# Removes the user from the dictionary.
 		guild = self.get_guild(payload.guild_id)
 		user = guild.get_member(payload.user_id)
 		self.user_emojis.pop(user)
