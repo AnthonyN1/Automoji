@@ -13,13 +13,12 @@ class UserEmojis(commands.Cog):
 	# react with that emoji.
 	@commands.command(name="addUserEmoji", ignore_extra=False)
 	async def add_user_emoji(self, ctx: commands.Context, arg: str):
-		print(arg)
 		# If 'arg' isn't an emoji, sends an error message.
 		if not self.bot.is_emoji(ctx.guild, arg):
 			await ctx.send("Invalid argument. Are you sure that's an emoji?")
 			return
 		
-		# Adds to the dictionary.
+		# Adds the user and their emoji to the dictionary.
 		self.bot.user_emojis[ctx.author] = arg
 
 		# Reacts to the user's message.
@@ -36,7 +35,7 @@ class UserEmojis(commands.Cog):
 	
 
 	# Command: !removeUserEmoji
-	# Removes the user's emoji. 
+	# Unassigns a user from their emoji. 
 	@commands.command(name="removeUserEmoji")
 	async def remove_user_emoji(self, ctx: commands.Context):
 		self.bot.user_emojis.pop(ctx.author)
