@@ -5,7 +5,7 @@ class UserEmojis(commands.Cog):
 	# Class constructor.
 	def __init__(self, bot: commands.Bot):
 		self.bot = bot
-		self.thumbs_up = '\N{THUMBS UP SIGN}'
+		self.robot_emoji = "\U0001F916"
 	
 
 	# Command: !addUserEmoji <emoji>
@@ -15,7 +15,7 @@ class UserEmojis(commands.Cog):
 	async def add_user_emoji(self, ctx, emoji: str):
 		self.bot.user_emojis[ctx.author] = emoji
 
-		await ctx.message.add_reaction(self.thumbs_up)
+		await ctx.message.add_reaction(self.robot_emoji)
 	
 	# Command: !removeUserEmoji
 	# Removes the user's emoji. 
@@ -23,7 +23,7 @@ class UserEmojis(commands.Cog):
 	async def remove_user_emoji(self, ctx):
 		self.bot.user_emojis.pop(ctx.author)
 
-		await ctx.message.add_reaction(self.thumbs_up)
+		await ctx.message.add_reaction(self.robot_emoji)
 
 
 # Required function for an extension.
