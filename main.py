@@ -21,7 +21,6 @@ def main():
 	except (discord.LoginFailure, discord.HTTPException):
 		print("Something went wrong. The bot was unable to login successfully.")
 		sys.exit(1)
-		
 
 
 if __name__ == "__main__":
