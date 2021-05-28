@@ -36,16 +36,21 @@ class Automoji(commands.Bot):
 		# Reacts to the user's message with their emoji.
 		try:
 			await message.add_reaction(emoji)
-		except discord.Forbidden:
+		except Exception as e:
+			self.add_reaction_error(e)
+	
+
+	def add_reaction_error(self, error: discord.DiscordException):
+		if isinstance(error, discord.Forbidden):
 			print("WARNING: received status code 403 (Forbidden)")
 			print("         unable to react with an emoji")
 			print("         requires permissions 'read_message_history' and 'add_reactions'")
-		except discord.NotFound:
+		elif isinstance(error, discord.NotFound):
 			print("WARNING: received status code 404 (Not Found)")
 			print("         unable to react with an emoji")
 			print("         specified emoji was not found")
-		except discord.HTTPException as e:
-			print(f"WARNING: an HTTP exception has occured (status code {e.status})")
+		elif isinstance(error, discord.HTTPException):
+			print(f"WARNING: an HTTP exception has occured (status code {error.status})")
 			print("         unable to react with an emoji.")
-		except discord.InvalidArgument:
+		elif isinstance(error, discord.InvalidArgument):
 			print("WARNING: invalid argument when reacting with an emoji")

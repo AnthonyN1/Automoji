@@ -15,7 +15,10 @@ class UserEmojis(commands.Cog):
 	async def add_user_emoji(self, ctx, emoji: str):
 		self.bot.user_emojis[ctx.author] = emoji
 
-		await ctx.message.add_reaction(self.robot_emoji)
+		try:
+			await ctx.message.add_reaction(self.robot_emoji)
+		except Exception as e:
+			self.bot.add_reaction_error(e)
 	
 	# Command: !removeUserEmoji
 	# Removes the user's emoji. 
@@ -23,7 +26,10 @@ class UserEmojis(commands.Cog):
 	async def remove_user_emoji(self, ctx):
 		self.bot.user_emojis.pop(ctx.author)
 
-		await ctx.message.add_reaction(self.robot_emoji)
+		try:
+			await ctx.message.add_reaction(self.robot_emoji)
+		except Exception as e:
+			self.bot.add_reaction_error(e)
 
 
 # Required function for an extension.
