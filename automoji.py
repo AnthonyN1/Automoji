@@ -1,5 +1,5 @@
+from decouple import config
 import discord
-import os
 
 
 class Automoji(discord.Client):
@@ -32,7 +32,7 @@ class Automoji(discord.Client):
 
 	# Sends the user_emojis message to the specified channel, and stores the message ID.
 	async def send_ue_msg(self):
-		channel_id = int(os.getenv("CHANNEL_ID"))
+		channel_id = config("CHANNEL_ID", cast=int)
 		channel = self.get_channel(channel_id)
 
 		ue_msg_str = "React to this message to get your custom emoji!\n- I'll react to every message you send with this emoji.\n- You may only have one emoji.\n- Please wait 5 seconds after reacting before messaging."
@@ -80,7 +80,7 @@ def main():
 
 	client = Automoji(intents=intents)
 
-	token = os.getenv("TOKEN")
+	token = config("TOKEN")
 	client.run(token)
 
 if __name__ == "__main__":
