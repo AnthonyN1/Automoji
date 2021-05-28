@@ -1,8 +1,9 @@
 from decouple import config
 import discord
+from discord.ext import commands
 
 
-class Automoji(discord.Client):
+class Automoji(commands.Bot):
 	# Class constructor.
 	def __init__(self, *args, **kwargs):
 		super().__init__(*args, **kwargs)
@@ -78,10 +79,10 @@ def main():
 	intents = discord.Intents.default()
 	intents.members = True
 
-	client = Automoji(intents=intents)
+	bot = Automoji(command_prefix="!", intents=intents)
 
 	token = config("TOKEN")
-	client.run(token)
+	bot.run(token)
 
 if __name__ == "__main__":
 	main()
