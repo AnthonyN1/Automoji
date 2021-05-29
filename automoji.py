@@ -11,6 +11,8 @@ class Automoji(commands.Bot):
 		# Constructs a dictionary, where the keys are Users, and the values are strings 
 		# representing emojis.
 		self.user_emojis = {}
+
+		self.robot_emoji = "\U0001F916"
 	
 	
 	async def on_message(self, message: discord.Message):
@@ -23,6 +25,20 @@ class Automoji(commands.Bot):
 
 		await self.process_commands(message)
 	
+
+	# Reacts to a message using the robot emoji.
+	async def bot_react(self, message: discord.Message):
+		try:
+			await message.add_reaction(self.robot_emoji)
+		except discord.DiscordException as e:
+			self.add_reaction_error(e)
+	
+	# Sends a message to the specified channel, and catches any thrown exceptions.
+	async def custom_send(self, ctx: commands.Context, msg: str):
+		try:
+			await ctx.send(msg)
+		except discord.HTTPException as e:
+			self.send_error(e)
 	
 	# Reacts to a user's message with their emoji.
 	async def react_user_emoji(self, message: discord.Message):
@@ -69,7 +85,7 @@ class Automoji(commands.Bot):
 			print(f"WARNING: an HTTP exception has occured (status code {error.status})")
 			print("         unable to send a message.")
 	
-	
+
 	# Determines if 'arg' is a valid emoji.
 	# A valid emoji can be: (1) unicode, (2) custom to the current guild, or (3) custom to a guild 
 	# outside the current one (e.g. Discord Nitro).
