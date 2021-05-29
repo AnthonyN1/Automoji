@@ -13,6 +13,9 @@ class Automoji(commands.Bot):
 
 		self.robot_emoji = "\U0001F916"
 	
+	async def on_command_error(self, ctx: commands.Context, error: commands.CommandError):
+		if isinstance(error, commands.CommandNotFound):
+			await self.custom_send(ctx, "I couldn't recognize that command. Please see '!help' for a list of commands.")
 	
 	async def on_message(self, message: discord.Message):
 		# Avoids the bot recursing through its own messages.
