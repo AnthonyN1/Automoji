@@ -83,6 +83,32 @@ class UserEmojis(commands.Cog):
 				self.bot.send_error(e)
 		else:
 			print(f"Caught unexpected exception at remove_user_emoji(): {type(error)}")
+	
+
+	# Command: !getUserEmoji [member]
+	# Gets the specified user's emoji and sends it to the channel.
+	@commands.command(name="getUserEmoji")
+	async def get_user_emoji(self, ctx: commands.Context, member: discord.Member = None):
+		# If the user doesn't specify a member, they default to being the member.
+		if member == None:
+			member = ctx.author
+		
+		# Gets the member's emoji.
+		try:
+			em = self.bot.user_emojis[member]
+		except KeyError:
+			try:
+				await ctx.send(f"{member.name} doesn't have an emoji!")
+			except discord.HTTPException as e:
+				self.bot.send_error(e)
+			
+			return
+		
+		# Sends the member's emoji to the channel.
+		try:
+			await ctx.send(f"{member.name}'s emoji is {em}!")
+		except discord.HTTPException as e:
+			self.bot.send_error(e)
 
 
 # Required function for an extension.
