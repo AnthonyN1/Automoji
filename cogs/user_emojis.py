@@ -5,6 +5,22 @@ from discord.ext import commands
 class UserEmojis(commands.Cog, name="User Emojis", command_attrs=dict(ignore_extra=False)):
 	def __init__(self, bot: commands.Bot):
 		self.bot = bot
+		self.cog_errors = [commands.NoPrivateMessage, commands.MissingRequiredArgument, commands.TooManyArguments]
+	
+
+	# Registers as a commands.Check() to all commands in this Cog.
+	def cog_check(self, ctx: commands.Context):
+		# All commands in this Cog can only be used in guilds.
+		if ctx.guild is None: raise commands.NoPrivateMessage
+		
+		return True
+	
+	# Catches any errors not dealt with in the commands' individual error handlers.
+	async def cog_command_error(self, ctx: commands.Context, error: commands.CommandError):
+		if isinstance(error, commands.NoPrivateMessage):
+			await self.bot.custom_send(ctx, "That command doesn't work in DMs!")
+		elif isinstance(error, (commands.MissingRequiredArgument, commands.TooManyArguments)):
+			await self.bot.custom_send(ctx, f"Invalid number of arguments. Please see '!help {ctx.command}'.")
 	
 
 	@commands.command(name="addUserEmoji")
@@ -20,6 +36,8 @@ class UserEmojis(commands.Cog, name="User Emojis", command_attrs=dict(ignore_ext
 		- You pass more than one emoji.
 		- You pass something other than an emoji.
 		- There's already an emoji assigned to you.
+
+		* This is a SERVER-ONLY command.
 		"""
 		# If 'arg' isn't an emoji, sends an error message.
 		if not self.bot.is_emoji(ctx.guild, arg):
@@ -37,12 +55,10 @@ class UserEmojis(commands.Cog, name="User Emojis", command_attrs=dict(ignore_ext
 		# Reacts to the user's message.
 		await self.bot.bot_react(ctx.message)
 	
-	# Explicitly caught exceptions: MissingRequiredArgument, TooManyArguments
+	# No explicitly caught exceptions.
 	@add_user_emoji.error
 	async def add_user_emoji_error(self, ctx: commands.Context, error: commands.CommandError):
-		if isinstance(error, (commands.MissingRequiredArgument, commands.TooManyArguments)):
-			await self.bot.custom_send(ctx, "Invalid number of arguments. Please see '!help addUserEmoji'.")
-		else:
+		if type(error) not in self.cog_errors:
 			print(f"Caught unexpected exception at add_user_emoji(): {type(error)}")
 	
 
@@ -65,6 +81,8 @@ class UserEmojis(commands.Cog, name="User Emojis", command_attrs=dict(ignore_ext
 		- You pass more than one user.
 		- You pass something that doesn't represent a user in this server.
 		- You passed a user that doesn't have an emoji assigned to them.
+
+		* This is a SERVER-ONLY command.
 		"""
 		# If the user doesn't specify a member, they default to being the member.
 		if member == None:
@@ -80,14 +98,12 @@ class UserEmojis(commands.Cog, name="User Emojis", command_attrs=dict(ignore_ext
 		# Sends the member's emoji to the channel.
 		await self.bot.custom_send(ctx, f"{member.name}'s emoji is {em}!")
 	
-	# Explicitly caught exceptions: TooManyArguments, MemberNotFound
+	# Explicitly caught exception: MemberNotFound
 	@get_user_emoji.error
 	async def get_user_emoji_error(self, ctx: commands.Context, error: commands.CommandError):
-		if isinstance(error, commands.TooManyArguments):
-			await self.bot.custom_send(ctx, "Invalid number of arguments. Please see '!help getUserEmoji'.")
-		elif isinstance(error, commands.MemberNotFound):
+		if isinstance(error, commands.MemberNotFound):
 			await self.bot.custom_send(ctx, "I couldn't find that user...")
-		else:
+		elif type(error) not in self.cog_errors:
 			print(f"Caught unexpected exception at get_user_emoji(): {type(error)}")
 	
 
@@ -102,6 +118,8 @@ class UserEmojis(commands.Cog, name="User Emojis", command_attrs=dict(ignore_ext
 		Failure conditions:
 		- You pass something.
 		- You don't have an emoji assigned to you.
+
+		* This is a SERVER-ONLY command.
 		"""
 		# If the user doesn't have an emoji, sends an error message.
 		if ctx.author not in self.bot.user_emojis:
@@ -114,12 +132,10 @@ class UserEmojis(commands.Cog, name="User Emojis", command_attrs=dict(ignore_ext
 		# Reacts to the user's message.
 		await self.bot.bot_react(ctx.message)
 	
-	# Explicitly caught exceptions: TooManyArguments
+	# No explicitly caught exceptions.
 	@remove_user_emoji.error
 	async def remove_user_emoji_error(self, ctx: commands.Context, error: commands.CommandError):
-		if isinstance(error, commands.TooManyArguments):
-			await self.bot.custom_send(ctx, "Invalid number of arguments. Please see '!help removeUserEmoji'.")
-		else:
+		if type(error) not in self.cog_errors:
 			print(f"Caught unexpected exception at remove_user_emoji(): {type(error)}")
 
 
