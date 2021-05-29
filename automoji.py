@@ -7,8 +7,9 @@ class Automoji(commands.Bot):
 	def __init__(self, *args, **kwargs):
 		super().__init__(*args, **kwargs)
 
-		# Constructs a dictionary, where the keys are Users, and the values are strings 
-		# representing emojis.
+		# Constructs a dictionary, where the keys are Guilds, and the values are dictionaries. 
+		# In the sub-dictionaries, the keys are Members, and the values are strings that represent 
+		# emojis.
 		self.user_emojis = {}
 
 		self.robot_emoji = "\U0001F916"
@@ -50,7 +51,7 @@ class Automoji(commands.Bot):
 		try:
 			# Gets the user's emoji.
 			user = message.author
-			em = self.user_emojis[user]
+			em = self.user_emojis[message.guild][user]
 		except KeyError:
 			# If the user doesn't have an emoji, don't do anything.
 			return

@@ -44,13 +44,17 @@ class UserEmojis(commands.Cog, name="User Emojis", command_attrs=dict(ignore_ext
 			await self.bot.custom_send(ctx, "Invalid argument. Are you sure that's an emoji?")
 			return
 		
-		# If the user already has an emoji, sends an error message.
-		if ctx.author in self.bot.user_emojis:
+		# If the guild isn't in the dictionary yet, adds it.
+		if ctx.guild not in self.bot.user_emojis:
+			self.bot.user_emojis[ctx.guild] = {}
+		
+		# If the user already has an emoji in this guild, sends an error message.
+		if ctx.author in self.bot.user_emojis[ctx.guild]:
 			await self.bot.custom_send(ctx, "You already have an emoji! Please use '!removeUserEmoji' first.")
 			return
 		
-		# Adds the user and their emoji to the dictionary.
-		self.bot.user_emojis[ctx.author] = arg
+		# Adds the user and their emoji to the sub-dictionary.
+		self.bot.user_emojis[ctx.guild][ctx.author] = arg
 
 		# Reacts to the user's message.
 		await self.bot.bot_react(ctx.message)
@@ -90,7 +94,7 @@ class UserEmojis(commands.Cog, name="User Emojis", command_attrs=dict(ignore_ext
 		
 		# Gets the member's emoji.
 		try:
-			em = self.bot.user_emojis[member]
+			em = self.bot.user_emojis[ctx.guild][member]
 		except KeyError:
 			await self.bot.custom_send(ctx, f"{member.name} doesn't have an emoji!")
 			return
@@ -121,13 +125,19 @@ class UserEmojis(commands.Cog, name="User Emojis", command_attrs=dict(ignore_ext
 
 		* This is a SERVER-ONLY command.
 		"""
-		# If the user doesn't have an emoji, sends an error message.
-		if ctx.author not in self.bot.user_emojis:
+		# Removes the user from the dictionary.
+		try:
+			self.bot.user_emojis[ctx.guild].pop(ctx.author)
+		except KeyError:
 			await self.bot.custom_send(ctx, "You don't have an emoji to remove!")
 			return
 		
-		# Removes the user from the dictionary.
-		self.bot.user_emojis.pop(ctx.author)
+		# If the sub-dictionary is now empty, removes it from the dictionary.
+		try:
+			if len(self.bot.user_emojis[ctx.guild]) == 0:
+				self.bot.user_emojis.pop(ctx.guild)
+		except KeyError:
+			pass
 
 		# Reacts to the user's message.
 		await self.bot.bot_react(ctx.message)
