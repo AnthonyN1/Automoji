@@ -2,7 +2,7 @@ import discord
 from discord.ext import commands
 
 
-class UserEmojis(commands.Cog):
+class UserEmojis(commands.Cog, name="User Emojis", command_attrs=dict(ignore_extra=False)):
 	# Class constructor.
 	def __init__(self, bot: commands.Bot):
 		self.bot = bot
@@ -11,7 +11,7 @@ class UserEmojis(commands.Cog):
 	# Command: !addUserEmoji <emoji>
 	# Assigns the user to the specified emoji. For every message the user sends, the bot will 
 	# react with that emoji.
-	@commands.command(name="addUserEmoji", ignore_extra=False)
+	@commands.command(name="addUserEmoji")
 	async def add_user_emoji(self, ctx: commands.Context, arg: str):
 		# If 'arg' isn't an emoji, sends an error message.
 		if not self.bot.is_emoji(ctx.guild, arg):
@@ -40,7 +40,7 @@ class UserEmojis(commands.Cog):
 
 	# Command: !getUserEmoji [member]
 	# Gets the specified user's emoji and sends it to the channel.
-	@commands.command(name="getUserEmoji", ignore_extra=False)
+	@commands.command(name="getUserEmoji")
 	async def get_user_emoji(self, ctx: commands.Context, member: discord.Member = None):
 		# If the user doesn't specify a member, they default to being the member.
 		if member == None:
@@ -69,7 +69,7 @@ class UserEmojis(commands.Cog):
 
 	# Command: !removeUserEmoji
 	# Unassigns a user from their emoji.
-	@commands.command(name="removeUserEmoji", ignore_extra=False)
+	@commands.command(name="removeUserEmoji")
 	async def remove_user_emoji(self, ctx: commands.Context):
 		# If the user doesn't have an emoji, sends an error message.
 		if ctx.author not in self.bot.user_emojis:
