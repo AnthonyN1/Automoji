@@ -38,30 +38,6 @@ class UserEmojis(commands.Cog):
 			print(f"Caught unexpected exception at add_user_emoji(): {type(error)}")
 	
 
-	# Command: !removeUserEmoji
-	# Unassigns a user from their emoji. 
-	@commands.command(name="removeUserEmoji", ignore_extra=False)
-	async def remove_user_emoji(self, ctx: commands.Context):
-		# If the user doesn't have an emoji, sends an error message.
-		if ctx.author not in self.bot.user_emojis:
-			await self.bot.custom_send(ctx, "You don't have an emoji to remove!")
-			return
-		
-		# Removes the user from the dictionary.
-		self.bot.user_emojis.pop(ctx.author)
-
-		# Reacts to the user's message.
-		await self.bot.bot_react(ctx.message)
-	
-	# Explicitly caught exceptions: TooManyArguments
-	@remove_user_emoji.error
-	async def remove_user_emoji_error(self, ctx: commands.Context, error: commands.CommandError):
-		if isinstance(error, commands.TooManyArguments):
-			await self.bot.custom_send(ctx, "Invalid number of arguments. Please see '!help removeUserEmoji'.")
-		else:
-			print(f"Caught unexpected exception at remove_user_emoji(): {type(error)}")
-	
-
 	# Command: !getUserEmoji [member]
 	# Gets the specified user's emoji and sends it to the channel.
 	@commands.command(name="getUserEmoji", ignore_extra=False)
@@ -89,6 +65,30 @@ class UserEmojis(commands.Cog):
 			await self.bot.custom_send(ctx, "I couldn't find that member...")
 		else:
 			print(f"Caught unexpected exception at get_user_emoji(): {type(error)}")
+	
+
+	# Command: !removeUserEmoji
+	# Unassigns a user from their emoji.
+	@commands.command(name="removeUserEmoji", ignore_extra=False)
+	async def remove_user_emoji(self, ctx: commands.Context):
+		# If the user doesn't have an emoji, sends an error message.
+		if ctx.author not in self.bot.user_emojis:
+			await self.bot.custom_send(ctx, "You don't have an emoji to remove!")
+			return
+		
+		# Removes the user from the dictionary.
+		self.bot.user_emojis.pop(ctx.author)
+
+		# Reacts to the user's message.
+		await self.bot.bot_react(ctx.message)
+	
+	# Explicitly caught exceptions: TooManyArguments
+	@remove_user_emoji.error
+	async def remove_user_emoji_error(self, ctx: commands.Context, error: commands.CommandError):
+		if isinstance(error, commands.TooManyArguments):
+			await self.bot.custom_send(ctx, "Invalid number of arguments. Please see '!help removeUserEmoji'.")
+		else:
+			print(f"Caught unexpected exception at remove_user_emoji(): {type(error)}")
 
 
 # Required function for an extension.
