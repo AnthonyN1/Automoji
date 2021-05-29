@@ -86,7 +86,7 @@ class UserEmojis(commands.Cog, name="User Emojis", command_attrs=dict(ignore_ext
 		if isinstance(error, commands.TooManyArguments):
 			await self.bot.custom_send(ctx, "Invalid number of arguments. Please see '!help getUserEmoji'.")
 		elif isinstance(error, commands.MemberNotFound):
-			await self.bot.custom_send(ctx, "I couldn't find that member...")
+			await self.bot.custom_send(ctx, "I couldn't find that user...")
 		else:
 			print(f"Caught unexpected exception at get_user_emoji(): {type(error)}")
 	
