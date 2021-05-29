@@ -40,7 +40,7 @@ class UserEmojis(commands.Cog):
 
 	# Command: !removeUserEmoji
 	# Unassigns a user from their emoji. 
-	@commands.command(name="removeUserEmoji")
+	@commands.command(name="removeUserEmoji", ignore_extra=False)
 	async def remove_user_emoji(self, ctx: commands.Context):
 		# If the user doesn't have an emoji, sends an error message.
 		if ctx.author not in self.bot.user_emojis:
@@ -64,7 +64,7 @@ class UserEmojis(commands.Cog):
 
 	# Command: !getUserEmoji [member]
 	# Gets the specified user's emoji and sends it to the channel.
-	@commands.command(name="getUserEmoji")
+	@commands.command(name="getUserEmoji", ignore_extra=False)
 	async def get_user_emoji(self, ctx: commands.Context, member: discord.Member = None):
 		# If the user doesn't specify a member, they default to being the member.
 		if member == None:
@@ -79,6 +79,16 @@ class UserEmojis(commands.Cog):
 		
 		# Sends the member's emoji to the channel.
 		await self.bot.custom_send(ctx, f"{member.name}'s emoji is {em}!")
+	
+	# Explicitly caught exceptions: TooManyArguments, MemberNotFound
+	@get_user_emoji.error
+	async def get_user_emoji_error(self, ctx: commands.Context, error: commands.CommandError):
+		if isinstance(error, commands.TooManyArguments):
+			await self.bot.custom_send(ctx, "Invalid number of arguments. Please see '!help getUserEmoji'.")
+		elif isinstance(error, commands.MemberNotFound):
+			await self.bot.custom_send(ctx, "I couldn't find that member...")
+		else:
+			print(f"Caught unexpected exception at get_user_emoji(): {type(error)}")
 
 
 # Required function for an extension.
