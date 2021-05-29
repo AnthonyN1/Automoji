@@ -3,16 +3,24 @@ from discord.ext import commands
 
 
 class UserEmojis(commands.Cog, name="User Emojis", command_attrs=dict(ignore_extra=False)):
-	# Class constructor.
 	def __init__(self, bot: commands.Bot):
 		self.bot = bot
 	
 
-	# Command: !addUserEmoji <emoji>
-	# Assigns the user to the specified emoji. For every message the user sends, the bot will 
-	# react with that emoji.
 	@commands.command(name="addUserEmoji")
 	async def add_user_emoji(self, ctx: commands.Context, arg: str):
+		"""
+		Adds an emoji to all of your messages
+		- For every message you send in a channel Automoji has access to, Automoji will react to it with this emoji.
+		
+		Expects: one emoji
+		
+		Failure conditions:
+		- You don't pass anything.
+		- You pass more than one emoji.
+		- You pass something other than an emoji.
+		- There's already an emoji assigned to you.
+		"""
 		# If 'arg' isn't an emoji, sends an error message.
 		if not self.bot.is_emoji(ctx.guild, arg):
 			await self.bot.custom_send(ctx, "Invalid argument. Are you sure that's an emoji?")
@@ -38,10 +46,26 @@ class UserEmojis(commands.Cog, name="User Emojis", command_attrs=dict(ignore_ext
 			print(f"Caught unexpected exception at add_user_emoji(): {type(error)}")
 	
 
-	# Command: !getUserEmoji [member]
-	# Gets the specified user's emoji and sends it to the channel.
 	@commands.command(name="getUserEmoji")
 	async def get_user_emoji(self, ctx: commands.Context, member: discord.Member = None):
+		"""
+		Gets a user's emoji
+		- Automoji will send a message detailing the specified user's emoji.
+
+		Expects: nothing, or one user
+		- If you don't pass anything, the specified user defaults to you.
+		- A user can be passed by:
+			- user ID
+			- mention
+			- username#discriminator
+			- username
+			- nickname
+		
+		Failure conditions:
+		- You pass more than one user.
+		- You pass something that doesn't represent a user in this server.
+		- You passed a user that doesn't have an emoji assigned to them.
+		"""
 		# If the user doesn't specify a member, they default to being the member.
 		if member == None:
 			member = ctx.author
@@ -67,10 +91,18 @@ class UserEmojis(commands.Cog, name="User Emojis", command_attrs=dict(ignore_ext
 			print(f"Caught unexpected exception at get_user_emoji(): {type(error)}")
 	
 
-	# Command: !removeUserEmoji
-	# Unassigns a user from their emoji.
 	@commands.command(name="removeUserEmoji")
 	async def remove_user_emoji(self, ctx: commands.Context):
+		"""
+		Removes your assigned emoji
+		- Automoji will stop reacting to your messages with your emoji.
+
+		Expects: nothing
+
+		Failure conditions:
+		- You pass something.
+		- You don't have an emoji assigned to you.
+		"""
 		# If the user doesn't have an emoji, sends an error message.
 		if ctx.author not in self.bot.user_emojis:
 			await self.bot.custom_send(ctx, "You don't have an emoji to remove!")

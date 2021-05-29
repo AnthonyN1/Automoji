@@ -4,7 +4,6 @@ import emoji
 
 
 class Automoji(commands.Bot):
-	# Class constructor.
 	def __init__(self, *args, **kwargs):
 		super().__init__(*args, **kwargs)
 
