@@ -27,6 +27,9 @@ class Automoji(commands.Bot):
 
 		await self.process_commands(message)
 	
+	async def on_ready(self):
+		print("Automoji is now online!")
+	
 
 	# Reacts to a message using the robot emoji.
 	async def bot_react(self, message: discord.Message):
