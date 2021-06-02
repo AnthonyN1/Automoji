@@ -11,7 +11,7 @@ class Automoji(commands.Bot):
 		# In the sub-dictionaries, the keys are Members, and the values are strings that represent 
 		# emojis.
 		self.user_emojis = {}
-
+		self.quotes = list()
 		self.robot_emoji = "\U0001F916"
 	
 	async def on_command_error(self, ctx: commands.Context, error: commands.CommandError):
