@@ -35,6 +35,7 @@ class UserEmojis(commands.Cog, name="User Emojis", command_attrs=dict(ignore_ext
 		- You don't pass anything.
 		- You pass more than one emoji.
 		- You pass something other than an emoji.
+        - You pass an emoji from another server
 		- There's already an emoji assigned to you.
 
 		* This is a SERVER-ONLY command.
