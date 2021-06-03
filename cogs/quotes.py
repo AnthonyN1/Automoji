@@ -21,6 +21,8 @@ class Quotes(commands.Cog):
 			await self.bot.custom_send(ctx, "That command doesn't work in DMs!")
 		elif isinstance(error, (commands.MissingRequiredArgument, commands.TooManyArguments)):
 			await self.bot.custom_send(ctx, f"Invalid number of arguments. Please see '!help {ctx.command}'.")
+		else:
+			print(error)
 
 	@commands.command(name="setQuoteChannel")
 	async def set_quote_channel(self, ctx: commands.Context, arg1: str, arg2: str = None):
@@ -28,7 +30,8 @@ class Quotes(commands.Cog):
 		Sets the channel for quotes
 		- Everytime a user requests a quote, Automoji will send a random message from this channel
 	
-		expects: channel name and optional channel category
+		expects: channel name
+		If there are multiple channels with that name, then a category can be defined as the second argument
 		
 		Failure conditions:
 		- You pass too little or too many arguments
@@ -37,35 +40,44 @@ class Quotes(commands.Cog):
 		- There is not a channel with that name
 		- There are multiple channels with that name
 		"""
+		if self.bot.quotesChannel != None:
+			await self.bot.custom_send(ctx, "Quote channel is already set! Try removing the channel.")
+			return
+		
 		quoteChannel = None
 		#Search for the channel
 		for c in ctx.guild.text_channels:
 			if arg1 == c.name and (arg1 == c.category or arg2 == None):
 					if quoteChannel != None:
-						self.bot.custom_send(ctx, "There are multiple channels with that name! Did you define a category?")
+						await self.bot.custom_send(ctx, "There are multiple channels with that name! Did you define a category?")
 						return
 					quoteChannel = c
 		
 		#If the channel is not found, return
 		if quoteChannel == None:
-			self.bot.custom_send(ctx, f"Sorry, {arg1} is not a valid channel!")
+			await self.bot.custom_send(ctx, f"Sorry, {arg1} is not a valid channel!")
 			return
 		
 		quoteList = list()
-		async for m in quoteChannel.history:
-			if self.bot.is_quote(m): quoteList.push(m)
-		
+		async for m in quoteChannel.history():
+			if self.bot.is_quote(m): quoteList.append(m)
+			else: print(f"Omitted: {m.content} from quote list")
+			
 		if len(quoteList) <= 0:
-			self.bot.custom_send(ctx, "Selected channel does not contain any valid quotes")
+			await self.bot.custom_send(ctx, "Selected channel does not contain any valid quotes")
 			return
 		
 		self.bot.quotesChannel = quoteChannel
 		self.bot.quotes = quoteList
 	
-	# No explicitly caught exceptions.
+	# Catches a discord Forbidden error
 	@set_quote_channel.error
 	async def set_quote_channel_error(self, ctx: commands.Context, error: commands.CommandError):
-		if type(error) not in self.cog_errors:
+		if isinstance(error, discord.Forbidden):
+			print("WARNING: received status code 403 (Forbidden)")
+			print("         unable to read message history")
+			print("         requires permission 'read_message_history'")
+		elif type(error) not in self.cog_errors:
 			print(f"Caught unexpected exception at set_quote_channel(): {type(error)}")
 			
 	@commands.command(name="removeQuoteChannel")
@@ -80,11 +92,11 @@ class Quotes(commands.Cog):
 		- Any argument is passed
 		- The quote channel is not set
 		"""
-		if self.bot.quotes_channel == None:
-			self.bot.custom_send(ctx, "No quote channel to remove!")
+		if self.bot.quotesChannel == None:
+			await self.bot.custom_send(ctx, "No quote channel to remove!")
 			return
 		
-		self.bot.quotes_channel = None
+		self.bot.quotesChannel = None
 		self.bot.quotes.clear()
 	
 	# No explicitly caught exceptions.
@@ -106,16 +118,16 @@ class Quotes(commands.Cog):
 		- The quote channel is not set
 		- The quote channel has no available quote messages
 		"""
-		if self.bot.quote_channel == None: 
-			self.bot.custom_send(ctx, "No quote channel set!")
+		if self.bot.quotesChannel == None: 
+			await self.bot.custom_send(ctx, "No quote channel set!")
 			return
 		try:
 			randomMessage = random.choice(self.bot.quotes)
 		except IndexError:
-			self.bot.custom_send(ctx, "Quotes channel contains no valid quotes!")
+			await self.bot.custom_send(ctx, "Quotes channel contains no valid quotes!")
 			return
 		
-		self.bot.custom_send(ctx, randomMessage.content)
+		await self.bot.custom_send(ctx, randomMessage.content)
 	
 	# No explicitly caught exceptions.
 	@get_quote.error

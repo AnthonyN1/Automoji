@@ -15,7 +15,7 @@ def main():
 	bot = Automoji(command_prefix="!", intents=intents)
 
 	# Loads extensions into the bot.
-	extensions = ["cogs.user_emojis"]
+	extensions = ["cogs.user_emojis", "cogs.quotes"]
 	for ext in extensions:
 		try:
 			bot.load_extension(ext)

@@ -24,10 +24,15 @@ class Automoji(commands.Bot):
 		if message.author.id == self.user.id:
 			return
 		
+		self.add_quote(message)
+		
 		# Reacts to the user's message with their emoji.
 		await self.react_user_emoji(message)
 
+		#TODO: add quote to quotes list
 		await self.process_commands(message)
+		
+		
 	
 	async def on_ready(self):
 		print("Automoji is now online!")
@@ -105,7 +110,7 @@ class Automoji(commands.Bot):
 		return False
 	
 	# Determines if 'message' is a quote
-	# A valid quote is one that does not have embeds or mentions and is not from the bot
+	# A valid quote is one that does not have embeds or mentions and is not from or for the bot
 	def is_quote(self, message: discord.Message):
 		#Checks if it is a message from the bot
 		if message.author.id == self.user.id: return False
@@ -116,4 +121,24 @@ class Automoji(commands.Bot):
 		#Checks if the message has any embeds
 		if len(message.embeds) > 0: return False
 		
+		#Check if the message contains an @everyone
+		#if message.mention_everyone: return False
+		
+		#TODO: try and find a way to exclude commands
+		
 		return True
+	
+	#Adds a quote to quote list if valid
+	def add_quote(self, message: discord.Message):
+		#Checks if quotesChannel is called and if quotes Channel is the message's channel
+		if self.quotesChannel == None or message.channel != self.quotesChannel:
+			return
+		
+		#Checks if the message is a valid quote
+		if self.is_quote(message):
+			self.quotes.append(message)
+		else:
+			print(f"Omitted: {message.content} from quote list")
+			return
+	
+	
