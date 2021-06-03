@@ -11,6 +11,7 @@ class Automoji(commands.Bot):
 		# In the sub-dictionaries, the keys are Members, and the values are strings that represent 
 		# emojis.
 		self.user_emojis = {}
+		self.quotesChannel = None
 		self.quotes = list()
 		self.robot_emoji = "\U0001F916"
 	
@@ -102,3 +103,17 @@ class Automoji(commands.Bot):
 		if (guild != None) and (any(arg == str(em) for em in guild.emojis)): return True
 
 		return False
+	
+	# Determines if 'message' is a quote
+	# A valid quote is one that does not have embeds or mentions and is not from the bot
+	def is_quote(self, message: discord.Message):
+		#Checks if it is a message from the bot
+		if message.author.id == self.user.id: return False
+		
+		#Checks if the message has any mentions
+		if len(message.mentions) > 0 or len(message.role_mentions) > 0 or len(message.channel_mentions) > 0: return False
+		
+		#Checks if the message has any embeds
+		if len(message.embeds) > 0: return False
+		
+		return True

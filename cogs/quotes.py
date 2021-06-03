@@ -1,5 +1,6 @@
 import discord
 from discord.ext import commands
+import random
 
 class Quotes(commands.Cog):
 	def __init__(self, bot: commands.Bot):
@@ -36,7 +37,37 @@ class Quotes(commands.Cog):
 		- There is not a channel with that name
 		- There are multiple channels with that name
 		"""
+		quoteChannel = None
+		#Search for the channel
+		for c in ctx.guild.text_channels:
+			if arg1 == c.name and (arg1 == c.category or arg2 == None):
+					if quoteChannel != None:
+						self.bot.custom_send(ctx, "There are multiple channels with that name! Did you define a category?")
+						return
+					quoteChannel = c
+		
+		#If the channel is not found, return
+		if quoteChannel == None:
+			self.bot.custom_send(ctx, f"Sorry, {arg1} is not a valid channel!")
+			return
+		
+		quoteList = list()
+		async for m in quoteChannel.history:
+			if self.bot.is_quote(m): quoteList.push(m)
+		
+		if len(quoteList) <= 0:
+			self.bot.custom_send(ctx, "Selected channel does not contain any valid quotes")
+			return
+		
+		self.bot.quotesChannel = quoteChannel
+		self.bot.quotes = quoteList
 	
+	# No explicitly caught exceptions.
+	@set_quote_channel.error
+	async def set_quote_channel_error(self, ctx: commands.Context, error: commands.CommandError):
+		if type(error) not in self.cog_errors:
+			print(f"Caught unexpected exception at set_quote_channel(): {type(error)}")
+			
 	@commands.command(name="removeQuoteChannel")
 	async def remove_quote_channel(self, ctx: commands.Context):
 		"""
@@ -49,7 +80,19 @@ class Quotes(commands.Cog):
 		- Any argument is passed
 		- The quote channel is not set
 		"""
+		if self.bot.quotes_channel == None:
+			self.bot.custom_send(ctx, "No quote channel to remove!")
+			return
+		
+		self.bot.quotes_channel = None
+		self.bot.quotes.clear()
 	
+	# No explicitly caught exceptions.
+	@remove_quote_channel.error
+	async def remove_quote_channel_error(self, ctx: commands.Context, error: commands.CommandError):
+		if type(error) not in self.cog_errors:
+			print(f"Caught unexpected exception at remove_quote_channel(): {type(error)}")
+			
 	@commands.command(name="getQuote")
 	async def get_quote(self, ctx: commands.context):
 		"""
@@ -61,7 +104,24 @@ class Quotes(commands.Cog):
 		Failure conditions:
 		- Any argument is passed
 		- The quote channel is not set
+		- The quote channel has no available quote messages
 		"""
+		if self.bot.quote_channel == None: 
+			self.bot.custom_send(ctx, "No quote channel set!")
+			return
+		try:
+			randomMessage = random.choice(self.bot.quotes)
+		except IndexError:
+			self.bot.custom_send(ctx, "Quotes channel contains no valid quotes!")
+			return
+		
+		self.bot.custom_send(ctx, randomMessage.content)
+	
+	# No explicitly caught exceptions.
+	@get_quote.error
+	async def get_quote_error(self, ctx: commands.Context, error: commands.CommandError):
+		if type(error) not in self.cog_errors:
+			print(f"Caught unexpected exception at get_quote(): {type(error)}")
 
 # Required function for an extension.
 def setup(bot: commands.Bot):
