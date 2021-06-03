@@ -11,8 +11,8 @@ class Automoji(commands.Bot):
 		# In the sub-dictionaries, the keys are Members, and the values are strings that represent 
 		# emojis.
 		self.user_emojis = {}
-		self.quotesChannel = None
-		self.quotes = list()
+		self.quotesChannels = {}
+		self.quotes = {}
 		self.robot_emoji = "\U0001F916"
 	
 	async def on_command_error(self, ctx: commands.Context, error: commands.CommandError):
@@ -24,12 +24,12 @@ class Automoji(commands.Bot):
 		if message.author.id == self.user.id:
 			return
 		
+		#Adds a quote to the quote list
 		self.add_quote(message)
 		
 		# Reacts to the user's message with their emoji.
 		await self.react_user_emoji(message)
 
-		#TODO: add quote to quotes list
 		await self.process_commands(message)
 		
 		
@@ -124,19 +124,23 @@ class Automoji(commands.Bot):
 		#Check if the message contains an @everyone
 		#if message.mention_everyone: return False
 		
-		#TODO: try and find a way to exclude commands
+		#TODO: try and find a way to exclude commands and @everyone
 		
 		return True
 	
 	#Adds a quote to quote list if valid
 	def add_quote(self, message: discord.Message):
+		#Checks if guild is in dictionary
+		if message.guild not in self.quotesChannels or message.guild not in self.quotes:
+			return
+		
 		#Checks if quotesChannel is called and if quotes Channel is the message's channel
-		if self.quotesChannel == None or message.channel != self.quotesChannel:
+		if self.quotesChannels[message.guild] == None or message.channel != self.quotesChannels[message.guild]:
 			return
 		
 		#Checks if the message is a valid quote
 		if self.is_quote(message):
-			self.quotes.append(message)
+			self.quotes[message.guild].append(message)
 		else:
 			print(f"Omitted: {message.content} from quote list")
 			return

@@ -40,7 +40,13 @@ class Quotes(commands.Cog):
 		- There is not a channel with that name
 		- There are multiple channels with that name
 		"""
-		if self.bot.quotesChannel != None:
+		if ctx.guild not in self.bot.quotesChannels:
+			self.bot.quotesChannels[ctx.guild] = None
+			
+		if ctx.guild not in self.bot.quotes:
+			self.bot.quotes[ctx.guild] = list()
+			
+		if self.bot.quotesChannels[ctx.guild] != None:
 			await self.bot.custom_send(ctx, "Quote channel is already set! Try removing the channel.")
 			return
 		
@@ -67,8 +73,9 @@ class Quotes(commands.Cog):
 			await self.bot.custom_send(ctx, "Selected channel does not contain any valid quotes")
 			return
 		
-		self.bot.quotesChannel = quoteChannel
-		self.bot.quotes = quoteList
+		
+		self.bot.quotesChannels[ctx.guild] = quoteChannel
+		self.bot.quotes[ctx.guild] = quoteList
 	
 	# Catches a discord Forbidden error
 	@set_quote_channel.error
@@ -92,12 +99,12 @@ class Quotes(commands.Cog):
 		- Any argument is passed
 		- The quote channel is not set
 		"""
-		if self.bot.quotesChannel == None:
+		if ctx.guild not in self.bot.quotesChannels or self.bot.quotesChannels[ctx.guild] == None:
 			await self.bot.custom_send(ctx, "No quote channel to remove!")
 			return
 		
-		self.bot.quotesChannel = None
-		self.bot.quotes.clear()
+		self.bot.quotesChannels[ctx.guild] = None
+		self.bot.quotes[ctx.guild].clear()
 	
 	# No explicitly caught exceptions.
 	@remove_quote_channel.error
@@ -118,11 +125,11 @@ class Quotes(commands.Cog):
 		- The quote channel is not set
 		- The quote channel has no available quote messages
 		"""
-		if self.bot.quotesChannel == None: 
+		if ctx.guild not in self.bot.quotesChannels or self.bot.quotesChannels[ctx.guild] == None: 
 			await self.bot.custom_send(ctx, "No quote channel set!")
 			return
 		try:
-			randomMessage = random.choice(self.bot.quotes)
+			randomMessage = random.choice(self.bot.quotes[ctx.guild])
 		except IndexError:
 			await self.bot.custom_send(ctx, "Quotes channel contains no valid quotes!")
 			return
