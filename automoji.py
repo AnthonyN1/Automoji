@@ -93,15 +93,12 @@ class Automoji(commands.Bot):
 	
 
 	# Determines if 'arg' is a valid emoji.
-	# A valid emoji can be: (1) unicode, (2) custom to the current guild, or (3) custom to a guild 
-	# outside the current one (e.g. Discord Nitro).
+	# A valid emoji can be: (1) unicode, (2) custom to the current guild
 	def is_emoji(self, guild: discord.Guild, arg: str):
 		# (1) Unicode emojis
 		if emoji.emoji_count(arg) == 1: return True
 
 		# (2) Custom emojis in the current guild
 		if (guild != None) and (any(arg == str(em) for em in guild.emojis)): return True
-
-		# TODO: (3) Custom emojis to a guild outside the current one
 
 		return False
