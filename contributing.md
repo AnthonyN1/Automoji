@@ -18,8 +18,6 @@ As such, please faithfully conform to the syntax and conventions laid out in the
 * Two (2) newlines separate ```__init__```, ```cog_check``` and ```cog_command_error```, and any new commands. For all other cases, one (1) newline is used.
 * For new commands, the ```name``` attribute should be camel-cased, while the function should be snake-cased.
 * Try to use function annotations for function parameters as much as possible, except for the ```self``` parameter.
-* Construct a docstring for command functions, since these get shown through the ```!help``` command. See ```user_emojis.py``` for examples.
-* Be smart with commenting your code. Don't over-do it, but at least include a comment for an independent code chunk.
 * For any command that doesn't respond to a user, add ```await self.bot.bot_react(ctx.message)``` to the end of the function. This makes Automoji react to the command message with :robot:.
 * An exception handler must be present for every command added, even if the handler doesn't catch any specific exception. This code segment should be present in all exception handlers:
 ```
@@ -28,6 +26,14 @@ elif type(error) not in self.cog_errors:
 ```
 * At the end of the file (separated by two (2) newlines) should be the ```setup``` function, which is required for all extensions. See ```user_emojis.py``` for an example.
 * At the end of all Python files should be a newline.
+
+## Commenting
+* Be smart with commenting your code. Don't over-do it, but at least include a comment for an independent code chunk.
+* Construct a docstring for command functions, since these get shown through the ```!help``` command. See ```user_emojis.py``` for examples.
+* All comments should have one space after the pound (#) symbol.
+* Comments should not exceed 100 spaces in width (this includes the preceding indentation).
+* If the type of a variable isn't apparently clear, include a comment describing its type. In the case of a dictionary, include the types of the Keys and Values.
+* For error handlers, include the exceptions that are explicitly caught in the function's comment (see ```user_emojis.py``` for examples).
 
 ## Additional notes
 * If your Cog imports a Python library, please include it in ```requirements.txt``` if it isn't already there.
