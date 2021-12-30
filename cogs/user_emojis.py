@@ -9,11 +9,11 @@ class UserEmojis(
 ):
     def __init__(self, bot: commands.Bot):
         self.bot = bot
-        self.cog_errors = [
+        self.cog_errors = (
             commands.NoPrivateMessage,
             commands.MissingRequiredArgument,
             commands.TooManyArguments,
-        ]
+        )
 
     # Registers as a commands.Check() to all commands in this Cog.
     def cog_check(self, ctx):
@@ -27,28 +27,18 @@ class UserEmojis(
     async def cog_command_error(self, ctx, error):
         if isinstance(error, commands.NoPrivateMessage):
             await ctx.send("That command doesn't work in DMs!")
-        else:
+        elif isinstance(error, self.cog_errors):
             await ctx.send("Invalid number of arguments.")
 
     @commands.command(name="addUserEmoji")
-    async def add_user_emoji(self, ctx, arg):
+    async def add_user_emoji(self, ctx, emoji):
         """
         Adds an emoji to all of your messages
-        - For every message you send in a channel Automoji has access to, Automoji will react to it with this emoji.
-
-        Expects: one emoji
-
-        Failure conditions:
-        - You don't pass anything.
-        - You pass more than one emoji.
-        - You pass something other than an emoji.
-        - You pass an emoji from another server.
-        - There's already an emoji assigned to you.
 
         * This is a SERVER-ONLY command.
         """
         # If 'arg' isn't an emoji, sends an error message.
-        if not self.bot.is_emoji(ctx.guild, arg):
+        if not self.bot.is_emoji(ctx.guild, emoji):
             await ctx.send("Invalid argument. Are you sure that's an emoji?")
             return
 
@@ -64,7 +54,7 @@ class UserEmojis(
             return
 
         # Adds the user and their emoji to the sub-dictionary.
-        self.bot.user_emojis[ctx.guild][ctx.author] = arg
+        self.bot.user_emojis[ctx.guild][ctx.author] = emoji
 
         # Reacts to the user's message.
         await self.bot.bot_react(ctx.message)
@@ -79,21 +69,6 @@ class UserEmojis(
     async def get_user_emoji(self, ctx, member: discord.Member = None):
         """
         Gets a user's emoji
-        - Automoji will send a message detailing the specified user's emoji.
-
-        Expects: nothing, or one user
-        - If you don't pass anything, the specified user defaults to you.
-        - A user can be passed by:
-                - user ID
-                - mention
-                - username#discriminator
-                - username
-                - nickname
-
-        Failure conditions:
-        - You pass more than one user.
-        - You pass something that doesn't represent a user in this server.
-        - You passed a user that doesn't have an emoji assigned to them.
 
         * This is a SERVER-ONLY command.
         """
@@ -103,13 +78,13 @@ class UserEmojis(
 
         # Gets the member's emoji.
         try:
-            em = self.bot.user_emojis[ctx.guild][member]
+            emoji = self.bot.user_emojis[ctx.guild][member]
         except KeyError:
             await ctx.send(f"{member.name} doesn't have an emoji!")
             return
 
         # Sends the member's emoji to the channel.
-        await ctx.send(f"{member.name}'s emoji is {em}!")
+        await ctx.send(f"{member.name}'s emoji is {emoji}!")
 
     # Explicitly caught exception: MemberNotFound
     @get_user_emoji.error
@@ -123,13 +98,6 @@ class UserEmojis(
     async def remove_user_emoji(self, ctx):
         """
         Removes your assigned emoji
-        - Automoji will stop reacting to your messages with your emoji.
-
-        Expects: nothing
-
-        Failure conditions:
-        - You pass something.
-        - You don't have an emoji assigned to you.
 
         * This is a SERVER-ONLY command.
         """

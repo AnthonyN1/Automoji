@@ -20,9 +20,8 @@ class Automoji(commands.Bot):
         self, ctx: commands.Context, error: commands.CommandError
     ):
         if isinstance(error, commands.CommandNotFound):
-            await self.custom_send(
-                ctx,
-                "I couldn't recognize that command. Please see '!help' for a list of commands.",
+            await ctx.send(
+                "I couldn't recognize that command. Please see '!help' for a list of commands."
             )
 
     async def on_message(self, message: discord.Message):
