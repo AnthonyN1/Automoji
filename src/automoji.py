@@ -19,9 +19,7 @@ class Automoji(commands.Bot):
         self.quotes_channels = {}
         self.quotes = {}
 
-    async def on_command_error(
-        self, ctx: commands.Context, error: commands.CommandError
-    ):
+    async def on_command_error(self, ctx, error):
         if isinstance(error, commands.CommandNotFound):
             await ctx.send(
                 "I couldn't recognize that command. Please see '!help' for a list of commands."
