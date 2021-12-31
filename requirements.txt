@@ -1,3 +1,0 @@
-discord.py==1.7.2
-emoji==1.2.0
-python-decouple==3.4

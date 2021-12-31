@@ -1,4 +1,4 @@
-# Automoji
+# Automoji [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 ## About
 Automoji is an open-source Discord bot that's in its early stages of development! Automoji will come with a variety of commands that Discord users can call, either in DMs or in a server! To invite Automoji to your Discord server, click on [this](https://discord.com/api/oauth2/authorize?client_id=764554242362441738&permissions=93248&scope=bot) link!
 
