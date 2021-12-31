@@ -30,6 +30,10 @@ class Automoji(commands.Bot):
         if message.author.id == self.user.id:
             return
 
+        # Adds a quote if sent in the quotes channel
+        if message.channel == self.quotes_channels[message.guild]:
+            self.add_quote(message)
+        
         # Reacts to the user's message with their emoji.
         await self.react_user_emoji(message)
 
@@ -73,3 +77,23 @@ class Automoji(commands.Bot):
             return True
 
         return False
+
+    # Adds a quote to quote list if valid
+    def add_quote(self, message: discord.Message):
+        # Checks if guild is in dictionary
+        if message.guild not in self.quotesChannels or message.guild not in self.quotes:
+            return
+
+        # Checks if quotesChannel is called and if quotes Channel is the message's channel
+        if (
+            self.quotesChannels[message.guild] == None
+            or message.channel != self.quotesChannels[message.guild]
+        ):
+            return
+
+        # Checks if the message is a valid quote
+        if message.author.id != self.user.id:
+            self.quotes[message.guild].append(message)
+        else:
+            print(f"Omitted: {message.clean_content} from quote list")
+            return
