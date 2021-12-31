@@ -30,6 +30,9 @@ class UserEmojis(
         elif isinstance(error, self.cog_errors):
             await ctx.send("Invalid number of arguments.")
 
+    ######################################################################
+    #   !addUserEmoji
+    ######################################################################
     @commands.command(name="addUserEmoji")
     async def add_user_emoji(self, ctx, emoji):
         """
@@ -65,6 +68,9 @@ class UserEmojis(
         if type(error) not in self.cog_errors:
             logger.warning(error)
 
+    ######################################################################
+    #   !getUserEmoji
+    ######################################################################
     @commands.command(name="getUserEmoji")
     async def get_user_emoji(self, ctx, member: discord.Member = None):
         """
@@ -94,6 +100,9 @@ class UserEmojis(
         elif type(error) not in self.cog_errors:
             logger.warning(error)
 
+    ######################################################################
+    #   !removeUserEmoji
+    ######################################################################
     @commands.command(name="removeUserEmoji")
     async def remove_user_emoji(self, ctx):
         """
