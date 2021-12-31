@@ -2,15 +2,17 @@ import discord
 from discord.ext import commands
 import random
 
+from am_logging import logger
+
 
 class Quotes(commands.Cog):
     def __init__(self, bot: commands.Bot):
         self.bot = bot
-        self.cog_errors = [
+        self.cog_errors = (
             commands.NoPrivateMessage,
             commands.MissingRequiredArgument,
             commands.TooManyArguments,
-        ]
+        )
 
     # Registers as a commands.Check() to all commands in this Cog.
     def cog_check(self, ctx):
@@ -21,19 +23,11 @@ class Quotes(commands.Cog):
         return True
 
     # Catches any errors not dealt with in the commands' individual error handlers.
-    async def cog_command_error(
-        self, ctx, error
-    ):
+    async def cog_command_error(self, ctx, error):
         if isinstance(error, commands.NoPrivateMessage):
             await ctx.send("That command doesn't work in DMs!")
-        elif isinstance(
-            error, (commands.MissingRequiredArgument, commands.TooManyArguments)
-        ):
-            await ctx.send(
-                f"Invalid number of arguments. Please see '!help {ctx.command}'."
-            )
-        else:
-            print(error)
+        elif isinstance(error, self.cog_errors):
+            await ctx.send("Invalid number of arguments.")
 
     @commands.command(name="setQuoteChannel")
     async def set_quote_channel(self, ctx, arg1: str):
@@ -91,17 +85,11 @@ class Quotes(commands.Cog):
         self.bot.quotes[ctx.guild] = quoteList
         await self.bot.bot_react(ctx.message)
 
-    # Catches a discord Forbidden error
+    # No explicitly caught exceptions.
     @set_quote_channel.error
-    async def set_quote_channel_error(
-        self, ctx, error
-    ):
-        if isinstance(error, discord.Forbidden):
-            print("WARNING: received status code 403 (Forbidden)")
-            print("         unable to read message history")
-            print("         requires permission 'read_message_history'")
-        elif type(error) not in self.cog_errors:
-            print(f"Caught unexpected exception at set_quote_channel(): {type(error)}")
+    async def set_quote_channel_error(self, ctx, error):
+        if type(error) not in self.cog_errors:
+            logger.warning(error)
 
     @commands.command(name="removeQuoteChannel")
     async def remove_quote_channel(self, ctx):
@@ -128,13 +116,9 @@ class Quotes(commands.Cog):
 
     # No explicitly caught exceptions.
     @remove_quote_channel.error
-    async def remove_quote_channel_error(
-        self, ctx, error
-    ):
+    async def remove_quote_channel_error(self, ctx, error):
         if type(error) not in self.cog_errors:
-            print(
-                f"Caught unexpected exception at remove_quote_channel(): {type(error)}"
-            )
+            logger.warning(error)
 
     @commands.command(name="getQuote")
     async def get_quote(self, ctx):
@@ -166,11 +150,9 @@ class Quotes(commands.Cog):
 
     # No explicitly caught exceptions.
     @get_quote.error
-    async def get_quote_error(
-        self, ctx, error
-    ):
+    async def get_quote_error(self, ctx, error):
         if type(error) not in self.cog_errors:
-            print(f"Caught unexpected exception at get_quote(): {type(error)}")
+            logger.warning(error)
 
 
 # Required function for an extension.
