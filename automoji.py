@@ -38,13 +38,6 @@ class Automoji(commands.Bot):
     async def on_ready(self):
         print("Automoji is now online!")
 
-    # Sends a message to the specified channel, and catches any thrown exceptions.
-    async def custom_send(self, ctx: commands.Context, msg: str):
-        try:
-            await ctx.send(msg)
-        except discord.HTTPException as e:
-            self.send_error(e)
-
     # Reacts to a message using the robot emoji.
     async def bot_react(self, message: discord.Message):
         try:

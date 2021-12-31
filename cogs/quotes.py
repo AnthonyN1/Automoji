@@ -25,12 +25,12 @@ class Quotes(commands.Cog):
         self, ctx: commands.Context, error: commands.CommandError
     ):
         if isinstance(error, commands.NoPrivateMessage):
-            await self.bot.custom_send(ctx, "That command doesn't work in DMs!")
+            await ctx.send("That command doesn't work in DMs!")
         elif isinstance(
             error, (commands.MissingRequiredArgument, commands.TooManyArguments)
         ):
-            await self.bot.custom_send(
-                ctx, f"Invalid number of arguments. Please see '!help {ctx.command}'."
+            await ctx.send(
+                f"Invalid number of arguments. Please see '!help {ctx.command}'."
             )
         else:
             print(error)
@@ -57,9 +57,7 @@ class Quotes(commands.Cog):
             self.bot.quotes[ctx.guild] = list()
 
         if self.bot.quotesChannels[ctx.guild] != None:
-            await self.bot.custom_send(
-                ctx, "Quote channel is already set! Try removing the channel."
-            )
+            await ctx.send("Quote channel is already set! Try removing the channel.")
             return
 
         quoteChannel = None
@@ -67,16 +65,15 @@ class Quotes(commands.Cog):
         for c in ctx.guild.text_channels:
             if arg1 == c.name:
                 if quoteChannel != None:
-                    await self.bot.custom_send(
-                        ctx,
-                        "There are multiple channels with that name! Maybe rename one?",
+                    await ctx.send(
+                        "There are multiple channels with that name! Maybe rename one?"
                     )
                     return
                 quoteChannel = c
 
         # If the channel is not found, return
         if quoteChannel == None:
-            await self.bot.custom_send(ctx, f"Sorry, {arg1} is not a valid channel!")
+            await ctx.send(f"Sorry, {arg1} is not a valid channel!")
             return
 
         quoteList = list()
@@ -87,9 +84,7 @@ class Quotes(commands.Cog):
                 print(f"Omitted: {m.clean_content} from quote list")
 
         if len(quoteList) <= 0:
-            await self.bot.custom_send(
-                ctx, "Selected channel does not contain any valid quotes"
-            )
+            await ctx.send("Selected channel does not contain any valid quotes")
             return
 
         self.bot.quotesChannels[ctx.guild] = quoteChannel
@@ -124,7 +119,7 @@ class Quotes(commands.Cog):
             ctx.guild not in self.bot.quotesChannels
             or self.bot.quotesChannels[ctx.guild] == None
         ):
-            await self.bot.custom_send(ctx, "No quote channel to remove!")
+            await ctx.send("No quote channel to remove!")
             return
 
         self.bot.quotesChannels[ctx.guild] = None
@@ -158,16 +153,16 @@ class Quotes(commands.Cog):
             ctx.guild not in self.bot.quotesChannels
             or self.bot.quotesChannels[ctx.guild] == None
         ):
-            await self.bot.custom_send(ctx, "No quote channel set!")
+            await ctx.send("No quote channel set!")
             return
         try:
             randomMessage = random.choice(self.bot.quotes[ctx.guild])
         except IndexError:
-            await self.bot.custom_send(ctx, "Quotes channel contains no valid quotes!")
+            await ctx.send("Quotes channel contains no valid quotes!")
             return
 
         # Sends a clean version of the message to the channel
-        await self.bot.custom_send(ctx, randomMessage.clean_content)
+        await ctx.send(randomMessage.clean_content)
 
     # No explicitly caught exceptions.
     @get_quote.error
