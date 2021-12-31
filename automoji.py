@@ -10,11 +10,14 @@ class Automoji(commands.Bot):
         super().__init__(*args, **kwargs)
 
         # Constructs a dictionary, where the keys are Guilds, and the values are dictionaries.
-        # In the sub-dictionaries, the keys are Members, and the values are strings that represent
-        # emojis.
+        # In the sub-dictionaries, the keys are Members, and the values are strings that represent emojis.
         self.user_emojis = {}
 
         self.robot_emoji = "\U0001F916"
+
+        # Constructs dictionaries, where the keys and Guilds, and the values are Channels and lists, respectively.
+        self.quotes_channels = {}
+        self.quotes = {}
 
     async def on_command_error(
         self, ctx: commands.Context, error: commands.CommandError
