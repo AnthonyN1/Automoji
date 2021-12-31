@@ -43,7 +43,7 @@ class Quotes(commands.Cog):
             self.bot.quotes[ctx.guild] = list()
 
         # If the guild already has a quote channel, sends an error message.
-        if self.bot.quotesChannels[ctx.guild] != None:
+        if self.bot.quotes_channels[ctx.guild] != None:
             await ctx.send(
                 "The quote channel is already set! Try removing the channel."
             )
@@ -73,7 +73,7 @@ class Quotes(commands.Cog):
             else:
                 logger.warning(f"Omitted: {m.clean_content} from quote list")
 
-        self.bot.quotesChannels[ctx.guild] = quote_channel
+        self.bot.quotes_channels[ctx.guild] = quote_channel
         self.bot.quotes[ctx.guild] = quote_list
 
         await self.bot.bot_react(ctx.message)
@@ -87,23 +87,18 @@ class Quotes(commands.Cog):
     @commands.command(name="removeQuoteChannel")
     async def remove_quote_channel(self, ctx):
         """
-        Removes the channels for quotes
-        - When called, Automoji will remove the current quote channel
+        Frogets the channel that Automoji looks at for quotes.
 
-        expects: nothing
-
-        Failure conditions:
-        - Any argument is passed
-        - The quote channel is not set
+        * This is a SERVER-ONLY command.
         """
         if (
-            ctx.guild not in self.bot.quotesChannels
-            or self.bot.quotesChannels[ctx.guild] == None
+            ctx.guild not in self.bot.quotes_channels
+            or self.bot.quotes_channels[ctx.guild] == None
         ):
             await ctx.send("No quote channel to remove!")
             return
 
-        self.bot.quotesChannels[ctx.guild] = None
+        self.bot.quotes_channels[ctx.guild] = None
         self.bot.quotes[ctx.guild].clear()
         await self.bot.bot_react(ctx.message)
 
@@ -116,30 +111,24 @@ class Quotes(commands.Cog):
     @commands.command(name="getQuote")
     async def get_quote(self, ctx):
         """
-        Grabs a quote
-        - When called, Automoji will grab a random message from the set quote channel
+        Gets a random quote from the quote channel.
 
-        expects: nothing
-
-        Failure conditions:
-        - Any argument is passed
-        - The quote channel is not set
-        - The quote channel has no available quote messages
+        * This is a SERVER-ONLY command.
         """
         if (
-            ctx.guild not in self.bot.quotesChannels
-            or self.bot.quotesChannels[ctx.guild] == None
+            ctx.guild not in self.bot.quotes_channels
+            or self.bot.quotes_channels[ctx.guild] == None
         ):
             await ctx.send("No quote channel set!")
             return
         try:
-            randomMessage = random.choice(self.bot.quotes[ctx.guild])
+            random_message = random.choice(self.bot.quotes[ctx.guild])
         except IndexError:
             await ctx.send("Quotes channel contains no valid quotes!")
             return
 
-        # Sends a clean version of the message to the channel
-        await ctx.send(randomMessage.clean_content)
+        # Sends a clean version of the message to the current channel.
+        await ctx.send(random_message.clean_content)
 
     # No explicitly caught exceptions.
     @get_quote.error

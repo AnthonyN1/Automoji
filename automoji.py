@@ -77,13 +77,13 @@ class Automoji(commands.Bot):
     # Adds a quote to quote list if valid
     def add_quote(self, message: discord.Message):
         # Checks if guild is in dictionary
-        if message.guild not in self.quotesChannels or message.guild not in self.quotes:
+        if message.guild not in self.quotes_channels or message.guild not in self.quotes:
             return
 
-        # Checks if quotesChannel is called and if quotes Channel is the message's channel
+        # Checks if quotes_channel is called and if quotes Channel is the message's channel
         if (
-            self.quotesChannels[message.guild] == None
-            or message.channel != self.quotesChannels[message.guild]
+            self.quotes_channels[message.guild] == None
+            or message.channel != self.quotes_channels[message.guild]
         ):
             return
 
