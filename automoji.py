@@ -13,7 +13,7 @@ class Automoji(commands.Bot):
         # In the sub-dictionaries, the keys are Members, and the values are strings that represent
         # emojis.
         self.user_emojis = {}
-        self.quotesChannels = {}
+        self.quotes_channels = {}
         self.quotes = {}
         self.robot_emoji = "\U0001F916"
 

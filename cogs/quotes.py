@@ -30,59 +30,52 @@ class Quotes(commands.Cog):
             await ctx.send("Invalid number of arguments.")
 
     @commands.command(name="setQuoteChannel")
-    async def set_quote_channel(self, ctx, arg1: str):
+    async def set_quote_channel(self, ctx, channel: str):
         """
-        Sets the channel for quotes
-        - Everytime a user requests a quote, Automoji will send a random message from this channel
+        Sets the channel that Automoji will look at for quotes.
 
-        expects: channel name
-
-        Failure conditions:
-        - You pass too little or too many arguments
-        - The quote channel is already set
-        - There are no messages in the quote channel
-        - There is not a channel with that name
-        - There are multiple channels with that name
+        * This is a SERVER-ONLY command.
         """
-        if ctx.guild not in self.bot.quotesChannels:
-            self.bot.quotesChannels[ctx.guild] = None
-
+        # If the guild isn't in the dictionaries yet, adds it.
+        if ctx.guild not in self.bot.quotes_channels:
+            self.bot.quotes_channels[ctx.guild] = None
         if ctx.guild not in self.bot.quotes:
             self.bot.quotes[ctx.guild] = list()
 
+        # If the guild already has a quote channel, sends an error message.
         if self.bot.quotesChannels[ctx.guild] != None:
-            await ctx.send("Quote channel is already set! Try removing the channel.")
+            await ctx.send(
+                "The quote channel is already set! Try removing the channel."
+            )
             return
 
-        quoteChannel = None
-        # Search for the channel
+        # Searches for the channel.
+        quote_channel = None
         for c in ctx.guild.text_channels:
-            if arg1 == c.name:
-                if quoteChannel != None:
+            if channel == c.name:
+                if quote_channel != None:
                     await ctx.send(
                         "There are multiple channels with that name! Maybe rename one?"
                     )
                     return
-                quoteChannel = c
+                quote_channel = c
 
-        # If the channel is not found, return
-        if quoteChannel == None:
-            await ctx.send(f"Sorry, {arg1} is not a valid channel!")
+        # If the channel is not found, sends and error message.
+        if quote_channel == None:
+            await ctx.send(f"Sorry, {channel} is not a valid channel!")
             return
 
-        quoteList = list()
-        async for m in quoteChannel.history():
+        # Gets all the quotes in the channel.
+        quote_list = list()
+        async for m in quote_channel.history():
             if m.author.id != self.bot.user.id:
-                quoteList.append(m)
+                quote_list.append(m)
             else:
-                print(f"Omitted: {m.clean_content} from quote list")
+                logger.warning(f"Omitted: {m.clean_content} from quote list")
 
-        if len(quoteList) <= 0:
-            await ctx.send("Selected channel does not contain any valid quotes")
-            return
+        self.bot.quotesChannels[ctx.guild] = quote_channel
+        self.bot.quotes[ctx.guild] = quote_list
 
-        self.bot.quotesChannels[ctx.guild] = quoteChannel
-        self.bot.quotes[ctx.guild] = quoteList
         await self.bot.bot_react(ctx.message)
 
     # No explicitly caught exceptions.
