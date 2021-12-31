@@ -13,7 +13,8 @@ class Automoji(commands.Bot):
         # In the sub-dictionaries, the keys are Members, and the values are strings that represent
         # emojis.
         self.user_emojis = {}
-
+        self.quotesChannels = {}
+        self.quotes = {}
         self.robot_emoji = "\U0001F916"
 
     async def on_command_error(
@@ -36,6 +37,13 @@ class Automoji(commands.Bot):
 
     async def on_ready(self):
         print("Automoji is now online!")
+
+    # Sends a message to the specified channel, and catches any thrown exceptions.
+    async def custom_send(self, ctx: commands.Context, msg: str):
+        try:
+            await ctx.send(msg)
+        except discord.HTTPException as e:
+            self.send_error(e)
 
     # Reacts to a message using the robot emoji.
     async def bot_react(self, message: discord.Message):
@@ -72,17 +80,21 @@ class Automoji(commands.Bot):
             return True
 
         return False
+
     # Adds a quote to quote list if valid
     def add_quote(self, message: discord.Message):
-		# Checks if guild is in dictionary
+        # Checks if guild is in dictionary
         if message.guild not in self.quotesChannels or message.guild not in self.quotes:
             return
-		
-		# Checks if quotesChannel is called and if quotes Channel is the message's channel
-        if self.quotesChannels[message.guild] == None or message.channel != self.quotesChannels[message.guild]:
+
+        # Checks if quotesChannel is called and if quotes Channel is the message's channel
+        if (
+            self.quotesChannels[message.guild] == None
+            or message.channel != self.quotesChannels[message.guild]
+        ):
             return
-		
-		# Checks if the message is a valid quote
+
+        # Checks if the message is a valid quote
         if message.author.id != self.user.id:
             self.quotes[message.guild].append(message)
         else:
