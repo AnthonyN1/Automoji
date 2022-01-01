@@ -1,11 +1,10 @@
-import discord
 from discord.ext import commands
 import random
 
 from am_logging import logger
 
 
-class Quotes(commands.Cog):
+class Quotes(commands.Cog, command_attrs=dict(ignore_extra=False)):
     def __init__(self, bot: commands.Bot):
         self.bot = bot
         self.cog_errors = (
@@ -29,10 +28,13 @@ class Quotes(commands.Cog):
         elif isinstance(error, self.cog_errors):
             await ctx.send("Invalid number of arguments.")
 
+    ######################################################################
+    #   !setQuoteChannel
+    ######################################################################
     @commands.command(name="setQuoteChannel")
     async def set_quote_channel(self, ctx, channel: str):
         """
-        Sets the channel that Automoji will look at for quotes.
+        Sets the channel that Automoji will look at for quotes
 
         * This is a SERVER-ONLY command.
         """
@@ -62,7 +64,7 @@ class Quotes(commands.Cog):
 
         # If the channel is not found, sends and error message.
         if quote_channel == None:
-            await ctx.send(f"Sorry, {channel} is not a valid channel!")
+            await ctx.send(f"Invalid argument. Are you sure that's a channel?")
             return
 
         # Gets all the quotes in the channel.
@@ -84,10 +86,13 @@ class Quotes(commands.Cog):
         if type(error) not in self.cog_errors:
             logger.warning(error)
 
+    ######################################################################
+    #   !removeQuoteChannel
+    ######################################################################
     @commands.command(name="removeQuoteChannel")
     async def remove_quote_channel(self, ctx):
         """
-        Frogets the channel that Automoji looks at for quotes.
+        Frogets the channel that Automoji looks at for quotes
 
         * This is a SERVER-ONLY command.
         """
@@ -100,6 +105,7 @@ class Quotes(commands.Cog):
 
         self.bot.quotes_channels[ctx.guild] = None
         self.bot.quotes[ctx.guild].clear()
+
         await self.bot.bot_react(ctx.message)
 
     # No explicitly caught exceptions.
@@ -108,10 +114,13 @@ class Quotes(commands.Cog):
         if type(error) not in self.cog_errors:
             logger.warning(error)
 
+    ######################################################################
+    #   !getQuote
+    ######################################################################
     @commands.command(name="getQuote")
     async def get_quote(self, ctx):
         """
-        Gets a random quote from the quote channel.
+        Gets a random quote from the quote channel
 
         * This is a SERVER-ONLY command.
         """
@@ -135,6 +144,10 @@ class Quotes(commands.Cog):
     async def get_quote_error(self, ctx, error):
         if type(error) not in self.cog_errors:
             logger.warning(error)
+
+    ######################################################################
+    #   End commands
+    ######################################################################
 
 
 # Required function for an extension.
