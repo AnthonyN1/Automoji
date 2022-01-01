@@ -1,6 +1,5 @@
 import discord
 from discord.ext import commands
-import emoji
 
 from am_logging import logger
 
@@ -60,16 +59,3 @@ class Automoji(commands.Bot):
             await message.add_reaction(em)
         except discord.DiscordException as e:
             logger.warning(e)
-
-    # Determines if 'arg' is a valid emoji.
-    # A valid emoji can be: (1) unicode, or (2) custom to the current guild.
-    def is_emoji(self, guild: discord.Guild, arg: str):
-        # (1) Unicode emojis
-        if emoji.emoji_count(arg) == 1:
-            return True
-
-        # (2) Custom emojis in the current guild
-        if (guild != None) and (any(arg == str(em) for em in guild.emojis)):
-            return True
-
-        return False

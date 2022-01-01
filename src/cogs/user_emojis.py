@@ -1,5 +1,7 @@
 import discord
 from discord.ext import commands
+import emoji
+import re
 
 from am_logging import logger
 
@@ -34,14 +36,16 @@ class UserEmojis(
     #   !addUserEmoji
     ######################################################################
     @commands.command(name="addUserEmoji")
-    async def add_user_emoji(self, ctx, emoji):
+    async def add_user_emoji(self, ctx, emoji: str):
         """
         Adds an emoji to all of your messages
+
+        If you want to use a custom emoji from another server, Automoji MUST be in that server as well.
 
         * This is a SERVER-ONLY command.
         """
         # If 'arg' isn't an emoji, sends an error message.
-        if not self.bot.is_emoji(ctx.guild, emoji):
+        if not self.is_emoji(emoji):
             await ctx.send("Invalid argument. Are you sure that's an emoji?")
             return
 
@@ -132,6 +136,23 @@ class UserEmojis(
     async def remove_user_emoji_error(self, ctx, error):
         if type(error) not in self.cog_errors:
             logger.warning(error)
+
+    ######################################################################
+    #   End commands
+    ######################################################################
+
+    # Determines if 'arg' is a valid emoji.
+    # A valid emoji can be: (1) unicode, or (2) custom.
+    def is_emoji(self, arg: str):
+        # (1) Unicode emojis
+        if emoji.emoji_count(arg) == 1:
+            return True
+
+        # (2) Custom emojis
+        result = re.match("<a?:(\w+):(\d{18})>", arg)
+        if bool(result):
+            id = int(result.group(2))
+            return self.bot.get_emoji(id) is not None
 
 
 # Required function for an extension.
