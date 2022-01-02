@@ -2,6 +2,7 @@ import discord
 from discord.ext import commands
 
 from am_logging import logger
+from am_db import db_conn, db_cur
 
 
 class Automoji(commands.Bot):
@@ -23,6 +24,14 @@ class Automoji(commands.Bot):
             await ctx.send(
                 "I couldn't recognize that command. Please see '!help' for a list of commands."
             )
+
+    async def on_guild_join(self, guild: discord.Guild):
+        db_cur.execute("INSERT INTO quote_channels VALUES (?, NULL);", (guild.id,))
+        db_conn.commit()
+
+    async def on_guild_remove(self, guild: discord.Guild):
+        db_cur.execute("DELETE FROM quote_channels WHERE guild=?;", (guild.id,))
+        db_conn.commit()
 
     async def on_message(self, message: discord.Message):
         # Avoids the bot recursing through its own messages.
