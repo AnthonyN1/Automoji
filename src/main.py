@@ -1,6 +1,6 @@
 import decouple
-import discord
-from discord.ext import commands
+import nextcord
+from nextcord.ext import commands
 import sys
 
 from automoji import Automoji
@@ -10,7 +10,7 @@ from am_db import db_conn
 
 def main():
     # Gets bot intents.
-    intents = discord.Intents.default()
+    intents = nextcord.Intents.default()
     intents.members = True
 
     # Initializes the bot.
@@ -35,10 +35,10 @@ def main():
     try:
         bot.run(token)
     except (
-        discord.LoginFailure,
-        discord.HTTPException,
-        discord.GatewayNotFound,
-        discord.ConnectionClosed,
+        nextcord.LoginFailure,
+        nextcord.HTTPException,
+        nextcord.GatewayNotFound,
+        nextcord.ConnectionClosed,
     ) as e:
         logger.error(e)
         print("An error has occurred. See discord.log for more details.\nExiting")

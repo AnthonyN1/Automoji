@@ -1,5 +1,4 @@
-from discord.ext import commands
-import random
+from nextcord.ext import commands
 
 from am_logging import logger
 from am_db import db_conn, db_cur

@@ -1,5 +1,5 @@
-import discord
-from discord.ext import commands
+import nextcord
+from nextcord.ext import commands
 import emoji
 import re
 
@@ -82,7 +82,7 @@ class UserEmojis(
     #   !getUserEmoji
     ######################################################################
     @commands.command(name="getUserEmoji")
-    async def get_user_emoji(self, ctx, member: discord.Member = None):
+    async def get_user_emoji(self, ctx, member: nextcord.Member = None):
         """
         Gets a user's emoji
 
