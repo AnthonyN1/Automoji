@@ -4,6 +4,7 @@ import emoji
 import re
 
 from am_logging import logger
+from am_db import db_conn, db_cur
 
 
 class UserEmojis(
@@ -49,19 +50,24 @@ class UserEmojis(
             await ctx.send("Invalid argument. Are you sure that's an emoji?")
             return
 
-        # If the guild isn't in the dictionary yet, adds it.
-        if ctx.guild not in self.bot.user_emojis:
-            self.bot.user_emojis[ctx.guild] = {}
-
-        # If the user already has an emoji in this guild, sends an error message.
-        if ctx.author in self.bot.user_emojis[ctx.guild]:
+        # Checks if the user already has an emoji in this guild.
+        db_cur.execute(
+            "SELECT emoji FROM emojis WHERE guild=? AND user=?;",
+            (ctx.guild.id, ctx.author.id),
+        )
+        if db_cur.fetchone()[0] is not None:
             await ctx.send(
                 "You already have an emoji! Please use '!removeUserEmoji' first."
             )
             return
 
-        # Adds the user and their emoji to the sub-dictionary.
-        self.bot.user_emojis[ctx.guild][ctx.author] = emoji
+        # Updates the row with the user's emoji.
+        db_cur.execute(
+            "UPDATE emojis SET emoji=? WHERE guild=? AND user=?;",
+            (emoji, ctx.guild.id, ctx.author.id),
+        )
+
+        db_conn.commit()
 
         # Reacts to the user's message.
         await self.bot.bot_react(ctx.message)
@@ -87,14 +93,16 @@ class UserEmojis(
             member = ctx.author
 
         # Gets the member's emoji.
-        try:
-            emoji = self.bot.user_emojis[ctx.guild][member]
-        except KeyError:
-            await ctx.send(f"{member.name} doesn't have an emoji!")
-            return
+        db_cur.execute(
+            "SELECT emoji FROM emojis WHERE guild=? AND user=?;",
+            (ctx.guild.id, member.id),
+        )
 
-        # Sends the member's emoji to the channel.
-        await ctx.send(f"{member.name}'s emoji is {emoji}!")
+        emoji = db_cur.fetchone()[0]
+        if emoji is None:
+            await ctx.send(f"{member.name} doesn't have an emoji!")
+        else:
+            await ctx.send(f"{member.name}'s emoji is {emoji}!")
 
     # Explicitly caught exception: MemberNotFound
     @get_user_emoji.error
@@ -114,19 +122,22 @@ class UserEmojis(
 
         * This is a SERVER-ONLY command.
         """
-        # Removes the user from the dictionary.
-        try:
-            self.bot.user_emojis[ctx.guild].pop(ctx.author)
-        except KeyError:
+        # Checks if the user doesn't have an emoji.
+        db_cur.execute(
+            "SELECT emoji FROM emojis WHERE guild=? AND user=?;",
+            (ctx.guild.id, ctx.author.id),
+        )
+        if db_cur.fetchone()[0] is None:
             await ctx.send("You don't have an emoji to remove!")
             return
 
-        # If the sub-dictionary is now empty, removes it from the dictionary.
-        try:
-            if len(self.bot.user_emojis[ctx.guild]) == 0:
-                self.bot.user_emojis.pop(ctx.guild)
-        except KeyError:
-            pass
+        # Removes the user's emoji from the row.
+        db_cur.execute(
+            "UPDATE emojis SET emoji=NULL WHERE guild=? AND user=?;",
+            (ctx.guild.id, ctx.author.id),
+        )
+
+        db_conn.commit()
 
         # Reacts to the user's message.
         await self.bot.bot_react(ctx.message)

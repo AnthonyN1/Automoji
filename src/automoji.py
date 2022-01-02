@@ -46,7 +46,7 @@ class Automoji(commands.Bot):
     async def on_member_join(self, member: discord.Member):
         # Inserts the member ID into the emojis table.
         db_cur.execute(
-            "INSERT INTO emojis VALUES (?, ?, NULL);", (member.guild, member.id)
+            "INSERT INTO emojis VALUES (?, ?, NULL);", (member.guild.id, member.id)
         )
 
         db_conn.commit()
@@ -54,7 +54,7 @@ class Automoji(commands.Bot):
     async def on_member_remove(self, member: discord.Member):
         # Deletes the row containing the member ID from the emojis table.
         db_cur.execute(
-            "DELETE FROM emojis WHERE guild=? AND user=?;", (member.guild, member.id)
+            "DELETE FROM emojis WHERE guild=? AND user=?;", (member.guild.id, member.id)
         )
 
         db_conn.commit()
@@ -85,16 +85,16 @@ class Automoji(commands.Bot):
 
     # Reacts to a user's message with their emoji.
     async def react_user_emoji(self, message: discord.Message):
-        try:
-            # Gets the user's emoji.
-            user = message.author
-            em = self.user_emojis[message.guild][user]
-        except KeyError:
-            # If the user doesn't have an emoji, don't do anything.
-            return
+        # Gets the user's emoji.
+        db_cur.execute(
+            "SELECT emoji FROM emojis WHERE guild=? AND user=?;",
+            (message.guild.id, message.author.id),
+        )
+        em = db_cur.fetchone()[0]
 
-        # Reacts to the user's message with their emoji.
-        try:
-            await message.add_reaction(em)
-        except discord.DiscordException as e:
-            logger.warning(e)
+        if em is not None:
+            # Reacts to the user's message with their emoji.
+            try:
+                await message.add_reaction(em)
+            except discord.DiscordException as e:
+                logger.warning(e)
