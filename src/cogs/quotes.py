@@ -103,7 +103,6 @@ class Quotes(commands.Cog, command_attrs=dict(ignore_extra=False)):
         """
         # Checks if the channel isn't set.
         # If it isn't sends an error message.
-        # Else, removes the channel and all quotes.
         db_cur.execute(
             "SELECT COUNT(ROWID) FROM quote_channels WHERE guild=? AND channel IS NULL;",
             (ctx.guild.id,),
@@ -111,12 +110,12 @@ class Quotes(commands.Cog, command_attrs=dict(ignore_extra=False)):
         if db_cur.fetchone()[0] == 1:
             await ctx.send("No quote channel to remove!")
             return
-        else:
-            db_cur.execute(
-                "UPDATE quote_channels SET channel=NULL WHERE guild=?;",
-                (ctx.guild.id,),
-            )
-            db_cur.execute("DELETE FROM quotes WHERE guild=?", (ctx.guild.id,))
+
+        # Removes the channel and all quotes.
+        db_cur.execute(
+            "UPDATE quote_channels SET channel=NULL WHERE guild=?;", (ctx.guild.id,)
+        )
+        db_cur.execute("DELETE FROM quotes WHERE guild=?", (ctx.guild.id,))
 
         db_conn.commit()
 
