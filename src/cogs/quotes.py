@@ -39,7 +39,7 @@ class Quotes(commands.Cog, command_attrs=dict(ignore_extra=False)):
 
         * This is a SERVER-ONLY command.
         """
-        # If the guild isn't in the dictionaries yet, adds it.
+        # Checks if the channel is already set.
         db_cur.execute(
             "SELECT COUNT(ROWID) FROM quote_channels WHERE guild=? AND channel IS NOT NULL;",
             (ctx.guild.id,),
@@ -61,8 +61,8 @@ class Quotes(commands.Cog, command_attrs=dict(ignore_extra=False)):
                     return
                 quote_channel = c
 
-        # If the channel is not found, sends and error message.
-        # Else, update the row in the table.
+        # If the channel is not found, sends an error message.
+        # Else, updates the row in the table.
         if quote_channel == None:
             await ctx.send(f"Invalid argument. Are you sure that's a channel?")
             return
