@@ -17,13 +17,16 @@ class Automoji(commands.Bot):
         # Constructs dictionaries, where the keys and Guilds, and the values are Channels and lists, respectively.
         self.quotes_channels = {}
         self.quotes = {}
-
+    
+    ######################################################################
+    #   Overridden commands
+    ######################################################################
     async def on_command_error(self, ctx, error):
         if isinstance(error, commands.CommandNotFound):
             await ctx.send(
                 "I couldn't recognize that command. Please see '!help' for a list of commands."
             )
-
+    
     async def on_message(self, message: discord.Message):
         # Avoids the bot recursing through its own messages.
         if message.author.id == self.user.id:
@@ -36,6 +39,10 @@ class Automoji(commands.Bot):
 
     async def on_ready(self):
         print("Automoji is now online!")
+    
+    ######################################################################
+    #   End overridden commands
+    ######################################################################
 
     # Reacts to a message using the robot emoji.
     async def bot_react(self, message: discord.Message):
