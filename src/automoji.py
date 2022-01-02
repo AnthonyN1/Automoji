@@ -2,6 +2,7 @@ import discord
 from discord.ext import commands
 
 from am_logging import logger
+from am_db import db_conn, db_cur
 
 
 class Automoji(commands.Bot):
@@ -14,10 +15,6 @@ class Automoji(commands.Bot):
 
         self.robot_emoji = "\U0001F916"
 
-        # Constructs dictionaries, where the keys and Guilds, and the values are Channels and lists, respectively.
-        self.quotes_channels = {}
-        self.quotes = {}
-    
     ######################################################################
     #   Overridden commands
     ######################################################################
@@ -26,7 +23,15 @@ class Automoji(commands.Bot):
             await ctx.send(
                 "I couldn't recognize that command. Please see '!help' for a list of commands."
             )
-    
+
+    async def on_guild_join(self, guild: discord.Guild):
+        db_cur.execute("INSERT INTO quote_channels VALUES (?, NULL);", (guild.id,))
+        db_conn.commit()
+
+    async def on_guild_remove(self, guild: discord.Guild):
+        db_cur.execute("DELETE FROM quote_channels WHERE guild=?;", (guild.id,))
+        db_conn.commit()
+
     async def on_message(self, message: discord.Message):
         # Avoids the bot recursing through its own messages.
         if message.author.id == self.user.id:
@@ -39,7 +44,7 @@ class Automoji(commands.Bot):
 
     async def on_ready(self):
         print("Automoji is now online!")
-    
+
     ######################################################################
     #   End overridden commands
     ######################################################################

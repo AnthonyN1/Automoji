@@ -5,6 +5,7 @@ import sys
 
 from automoji import Automoji
 from am_logging import logger
+from am_db import db_conn
 
 
 def main():
@@ -42,6 +43,9 @@ def main():
         logger.error(e)
         print("An error has occurred. See discord.log for more details.\nExiting")
         sys.exit(1)
+
+    # Closes the connection to the database.
+    db_conn.close()
 
 
 if __name__ == "__main__":
