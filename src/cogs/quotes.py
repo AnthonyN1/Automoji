@@ -41,10 +41,9 @@ class Quotes(commands.Cog, command_attrs=dict(ignore_extra=False)):
         """
         # Checks if the channel is already set.
         db_cur.execute(
-            "SELECT COUNT(ROWID) FROM quote_channels WHERE guild=? AND channel IS NOT NULL;",
-            (ctx.guild.id,),
+            "SELECT channel FROM quote_channels WHERE guild=?;", (ctx.guild.id,)
         )
-        if db_cur.fetchone()[0] == 1:
+        if db_cur.fetchone()[0] is not None:
             await ctx.send(
                 "The quote channel is already set! Try removing the channel."
             )
@@ -103,10 +102,9 @@ class Quotes(commands.Cog, command_attrs=dict(ignore_extra=False)):
         """
         # Sends an error message if the channel isn't set.
         db_cur.execute(
-            "SELECT COUNT(ROWID) FROM quote_channels WHERE guild=? AND channel IS NULL;",
-            (ctx.guild.id,),
+            "SELECT channel FROM quote_channels WHERE guild=?;", (ctx.guild.id,)
         )
-        if db_cur.fetchone()[0] == 1:
+        if db_cur.fetchone()[0] is None:
             await ctx.send("No quote channel to remove!")
             return
 
@@ -138,10 +136,9 @@ class Quotes(commands.Cog, command_attrs=dict(ignore_extra=False)):
         """
         # Sends an error message if the channel isn't set.
         db_cur.execute(
-            "SELECT COUNT(ROWID) FROM quote_channels WHERE guild=? AND channel IS NULL;",
-            (ctx.guild.id,),
+            "SELECT channel FROM quote_channels WHERE guild=?;", (ctx.guild.id,)
         )
-        if db_cur.fetchone()[0] == 1:
+        if db_cur.fetchone()[0] is None:
             await ctx.send("No quote channel set!")
             return
 
