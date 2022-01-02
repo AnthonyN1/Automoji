@@ -97,7 +97,7 @@ class Quotes(commands.Cog, command_attrs=dict(ignore_extra=False)):
     @commands.command(name="removeQuoteChannel")
     async def remove_quote_channel(self, ctx):
         """
-        Frogets the channel that Automoji looks at for quotes
+        Forgets the channel that Automoji looks at for quotes
 
         * This is a SERVER-ONLY command.
         """
