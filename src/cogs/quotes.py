@@ -101,8 +101,7 @@ class Quotes(commands.Cog, command_attrs=dict(ignore_extra=False)):
 
         * This is a SERVER-ONLY command.
         """
-        # Checks if the channel isn't set.
-        # If it isn't sends an error message.
+        # Sends an error message if the channel isn't set.
         db_cur.execute(
             "SELECT COUNT(ROWID) FROM quote_channels WHERE guild=? AND channel IS NULL;",
             (ctx.guild.id,),
@@ -137,20 +136,29 @@ class Quotes(commands.Cog, command_attrs=dict(ignore_extra=False)):
 
         * This is a SERVER-ONLY command.
         """
-        if (
-            ctx.guild not in self.bot.quotes_channels
-            or self.bot.quotes_channels[ctx.guild] == None
-        ):
+        # Sends an error message if the channel isn't set.
+        db_cur.execute(
+            "SELECT COUNT(ROWID) FROM quote_channels WHERE guild=? AND channel IS NULL;",
+            (ctx.guild.id,),
+        )
+        if db_cur.fetchone()[0] == 1:
             await ctx.send("No quote channel set!")
             return
-        try:
-            random_message = random.choice(self.bot.quotes[ctx.guild])
-        except IndexError:
+
+        # Sends an error message if there are no quotes.
+        db_cur.execute(
+            "SELECT COUNT(ROWID) FROM quotes WHERE guild=?;", (ctx.guild.id,)
+        )
+        if db_cur.fetchone()[0] == 0:
             await ctx.send("Quotes channel contains no valid quotes!")
             return
 
-        # Sends a clean version of the message to the current channel.
-        await ctx.send(random_message.clean_content)
+        # Sends a random quote.
+        db_cur.execute(
+            "SELECT quote FROM quotes WHERE guild=? ORDER BY RANDOM() LIMIT 1;",
+            (ctx.guild.id,),
+        )
+        await ctx.send(db_cur.fetchone()[0])
 
     # No explicitly caught exceptions.
     @get_quote.error
