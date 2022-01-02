@@ -15,10 +15,6 @@ class Automoji(commands.Bot):
 
         self.robot_emoji = "\U0001F916"
 
-        # Constructs dictionaries, where the keys and Guilds, and the values are Channels and lists, respectively.
-        self.quotes_channels = {}
-        self.quotes = {}
-
     async def on_command_error(self, ctx, error):
         if isinstance(error, commands.CommandNotFound):
             await ctx.send(

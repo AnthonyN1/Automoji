@@ -2,6 +2,7 @@ from discord.ext import commands
 import random
 
 from am_logging import logger
+from am_db import db_conn, db_cur
 
 
 class Quotes(commands.Cog, command_attrs=dict(ignore_extra=False)):
@@ -39,13 +40,11 @@ class Quotes(commands.Cog, command_attrs=dict(ignore_extra=False)):
         * This is a SERVER-ONLY command.
         """
         # If the guild isn't in the dictionaries yet, adds it.
-        if ctx.guild not in self.bot.quotes_channels:
-            self.bot.quotes_channels[ctx.guild] = None
-        if ctx.guild not in self.bot.quotes:
-            self.bot.quotes[ctx.guild] = list()
-
-        # If the guild already has a quote channel, sends an error message.
-        if self.bot.quotes_channels[ctx.guild] != None:
+        db_cur.execute(
+            "SELECT COUNT(ROWID) FROM quote_channels WHERE guild=? AND channel IS NOT NULL;",
+            (ctx.guild.id,),
+        )
+        if db_cur.fetchone()[0] == 1:
             await ctx.send(
                 "The quote channel is already set! Try removing the channel."
             )
@@ -63,20 +62,26 @@ class Quotes(commands.Cog, command_attrs=dict(ignore_extra=False)):
                 quote_channel = c
 
         # If the channel is not found, sends and error message.
+        # Else, update the row in the table.
         if quote_channel == None:
             await ctx.send(f"Invalid argument. Are you sure that's a channel?")
             return
+        else:
+            db_cur.execute(
+                "UPDATE quote_channels SET channel=? WHERE guild=?;",
+                (quote_channel.id, ctx.guild.id),
+            )
 
         # Gets all the quotes in the channel.
-        quote_list = list()
         async for m in quote_channel.history():
             if m.author.id != self.bot.user.id:
-                quote_list.append(m)
+                db_cur.execute(
+                    "INSERT INTO quotes VALUES (?, ?)", (ctx.guild.id, m.clean_content)
+                )
             else:
                 logger.warning(f"Omitted: {m.clean_content} from quote list")
 
-        self.bot.quotes_channels[ctx.guild] = quote_channel
-        self.bot.quotes[ctx.guild] = quote_list
+        db_conn.commit()
 
         await self.bot.bot_react(ctx.message)
 
