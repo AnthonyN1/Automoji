@@ -45,23 +45,26 @@ class Automoji(commands.Bot):
 
     async def on_member_join(self, member: discord.Member):
         # Inserts the member ID into the emojis table.
-        db_cur.execute(
-            "INSERT INTO emojis VALUES (?, ?, NULL);", (member.guild.id, member.id)
-        )
+        if not member.bot:
+            db_cur.execute(
+                "INSERT INTO emojis VALUES (?, ?, NULL);", (member.guild.id, member.id)
+            )
 
         db_conn.commit()
 
     async def on_member_remove(self, member: discord.Member):
         # Deletes the row containing the member ID from the emojis table.
-        db_cur.execute(
-            "DELETE FROM emojis WHERE guild=? AND user=?;", (member.guild.id, member.id)
-        )
+        if not member.bot:
+            db_cur.execute(
+                "DELETE FROM emojis WHERE guild=? AND user=?;",
+                (member.guild.id, member.id),
+            )
 
         db_conn.commit()
 
     async def on_message(self, message: discord.Message):
         # Avoids the bot recursing through its own messages.
-        if message.author.id == self.user.id:
+        if message.author.id == self.user.id or message.author.bot:
             return
 
         # Reacts to the user's message with their emoji.
