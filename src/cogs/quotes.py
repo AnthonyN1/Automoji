@@ -101,15 +101,24 @@ class Quotes(commands.Cog, command_attrs=dict(ignore_extra=False)):
 
         * This is a SERVER-ONLY command.
         """
-        if (
-            ctx.guild not in self.bot.quotes_channels
-            or self.bot.quotes_channels[ctx.guild] == None
-        ):
+        # Checks if the channel isn't set.
+        # If it isn't sends an error message.
+        # Else, removes the channel and all quotes.
+        db_cur.execute(
+            "SELECT COUNT(ROWID) FROM quote_channels WHERE guild=? AND channel IS NULL;",
+            (ctx.guild.id,),
+        )
+        if db_cur.fetchone()[0] == 1:
             await ctx.send("No quote channel to remove!")
             return
+        else:
+            db_cur.execute(
+                "UPDATE quote_channels SET channel=NULL WHERE guild=?;",
+                (ctx.guild.id,),
+            )
+            db_cur.execute("DELETE FROM quotes WHERE guild=?", (ctx.guild.id,))
 
-        self.bot.quotes_channels[ctx.guild] = None
-        self.bot.quotes[ctx.guild].clear()
+        db_conn.commit()
 
         await self.bot.bot_react(ctx.message)
 
