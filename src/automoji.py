@@ -1,4 +1,5 @@
 import discord
+from discord import template
 from discord.ext import commands
 
 from am_logging import logger
@@ -8,10 +9,6 @@ from am_db import db_conn, db_cur
 class Automoji(commands.Bot):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-
-        # Constructs a dictionary, where the keys are Guilds, and the values are dictionaries.
-        # In the sub-dictionaries, the keys are Members, and the values are strings that represent emojis.
-        self.user_emojis = {}
 
         self.robot_emoji = "\U0001F916"
 
@@ -25,11 +22,41 @@ class Automoji(commands.Bot):
             )
 
     async def on_guild_join(self, guild: discord.Guild):
+        # Inserts the guild ID into the quote table.
         db_cur.execute("INSERT INTO quote_channels VALUES (?, NULL);", (guild.id,))
+
+        # Inserts the guild ID and user IDs into the emojis table.
+        for m in guild.members:
+            if not m.bot:
+                db_cur.execute(
+                    "INSERT INTO emojis VALUES (?, ?, NULL);", (guild.id, m.id)
+                )
+
         db_conn.commit()
 
     async def on_guild_remove(self, guild: discord.Guild):
+        # Deletes the row containing the guild ID from the quote table.
         db_cur.execute("DELETE FROM quote_channels WHERE guild=?;", (guild.id,))
+
+        # Deletes rows contains the guild ID from the emojis table.
+        db_cur.execute("DELETE FROM emojis WHERE guild=?;", (guild.id,))
+
+        db_conn.commit()
+
+    async def on_member_join(self, member: discord.Member):
+        # Inserts the member ID into the emojis table.
+        db_cur.execute(
+            "INSERT INTO emojis VALUES (?, ?, NULL);", (member.guild, member.id)
+        )
+
+        db_conn.commit()
+
+    async def on_member_remove(self, member: discord.Member):
+        # Deletes the row containing the member ID from the emojis table.
+        db_cur.execute(
+            "DELETE FROM emojis WHERE guild=? AND user=?;", (member.guild, member.id)
+        )
+
         db_conn.commit()
 
     async def on_message(self, message: discord.Message):
