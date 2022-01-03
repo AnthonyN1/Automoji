@@ -28,5 +28,4 @@ if [ ! -d "logs" ]; then
 fi
 
 # Runs the program.
-python3.10 "src/main.py" > "logs/process.log" 2>&1 &
-echo $! > "logs/pid.log"
+python3.10 "src/main.py" > "logs/process.log" 2>&1
