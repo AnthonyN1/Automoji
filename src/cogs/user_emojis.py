@@ -95,8 +95,7 @@ class UserEmojis(
             (ctx.guild.id, member.id),
         )
 
-        emoji = self.bot.cur.fetchone()[0]
-        if emoji is None:
+        if (emoji := self.bot.cur.fetchone()[0]) is None:
             await ctx.send(f"{member.name} doesn't have an emoji!")
         else:
             await ctx.send(f"{member.name}'s emoji is {emoji}!")
@@ -157,8 +156,7 @@ class UserEmojis(
             return True
 
         # (2) Custom emojis
-        result = re.match("<a?:(\w+):(\d{18})>", arg)
-        if bool(result):
+        if bool(result := re.match("<a?:(\w+):(\d{18})>", arg)):
             id = int(result.group(2))
             return self.bot.get_emoji(id) is not None
 
