@@ -2,7 +2,7 @@ import sqlite3
 
 
 # Connects to the database and sets up a cursor.
-db_conn = sqlite3.connect("../automoji.db")
+db_conn = sqlite3.connect("automoji.db")
 db_cur = db_conn.cursor()
 
 # Creates tables for the Quotes cog, if they don't exist already.
