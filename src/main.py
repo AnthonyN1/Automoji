@@ -5,7 +5,7 @@ import sys
 
 from automoji import Automoji
 from am_logging import logger
-from am_db import db_conn
+from am_db import db_conn, db_cur
 
 
 def main():
@@ -14,7 +14,9 @@ def main():
     intents.members = True
 
     # Initializes the bot.
-    bot = Automoji(command_prefix="!", intents=intents)
+    bot = Automoji(
+        command_prefix="!", intents=intents, logger=logger, conn=db_conn, cur=db_cur
+    )
 
     # Loads extensions into the bot.
     extensions = ["cogs.user_emojis", "cogs.quotes"]

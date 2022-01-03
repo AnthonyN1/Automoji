@@ -3,9 +3,6 @@ from nextcord.ext import commands
 import emoji
 import re
 
-from am_logging import logger
-from am_db import db_conn, db_cur
-
 
 class UserEmojis(
     commands.Cog, name="User Emojis", command_attrs=dict(ignore_extra=False)
@@ -51,23 +48,23 @@ class UserEmojis(
             return
 
         # Checks if the user already has an emoji in this guild.
-        db_cur.execute(
+        self.bot.cur.execute(
             "SELECT emoji FROM emojis WHERE guild=? AND user=?;",
             (ctx.guild.id, ctx.author.id),
         )
-        if db_cur.fetchone()[0] is not None:
+        if self.bot.cur.fetchone()[0] is not None:
             await ctx.send(
                 "You already have an emoji! Please use '!removeUserEmoji' first."
             )
             return
 
         # Updates the row with the user's emoji.
-        db_cur.execute(
+        self.bot.cur.execute(
             "UPDATE emojis SET emoji=? WHERE guild=? AND user=?;",
             (emoji, ctx.guild.id, ctx.author.id),
         )
 
-        db_conn.commit()
+        self.bot.conn.commit()
 
         # Reacts to the user's message.
         await self.bot.bot_react(ctx.message)
@@ -76,7 +73,7 @@ class UserEmojis(
     @add_user_emoji.error
     async def add_user_emoji_error(self, ctx, error):
         if type(error) not in self.cog_errors:
-            logger.warning(error)
+            self.bot.logger.warning(error)
 
     ######################################################################
     #   !getUserEmoji
@@ -93,12 +90,12 @@ class UserEmojis(
             member = ctx.author
 
         # Gets the member's emoji.
-        db_cur.execute(
+        self.bot.cur.execute(
             "SELECT emoji FROM emojis WHERE guild=? AND user=?;",
             (ctx.guild.id, member.id),
         )
 
-        emoji = db_cur.fetchone()[0]
+        emoji = self.bot.cur.fetchone()[0]
         if emoji is None:
             await ctx.send(f"{member.name} doesn't have an emoji!")
         else:
@@ -110,7 +107,7 @@ class UserEmojis(
         if isinstance(error, commands.MemberNotFound):
             await ctx.send("I couldn't find that user...")
         elif type(error) not in self.cog_errors:
-            logger.warning(error)
+            self.bot.logger.warning(error)
 
     ######################################################################
     #   !removeUserEmoji
@@ -123,21 +120,21 @@ class UserEmojis(
         * This is a SERVER-ONLY command.
         """
         # Checks if the user doesn't have an emoji.
-        db_cur.execute(
+        self.bot.cur.execute(
             "SELECT emoji FROM emojis WHERE guild=? AND user=?;",
             (ctx.guild.id, ctx.author.id),
         )
-        if db_cur.fetchone()[0] is None:
+        if self.bot.cur.fetchone()[0] is None:
             await ctx.send("You don't have an emoji to remove!")
             return
 
         # Removes the user's emoji from the row.
-        db_cur.execute(
+        self.bot.cur.execute(
             "UPDATE emojis SET emoji=NULL WHERE guild=? AND user=?;",
             (ctx.guild.id, ctx.author.id),
         )
 
-        db_conn.commit()
+        self.bot.conn.commit()
 
         # Reacts to the user's message.
         await self.bot.bot_react(ctx.message)
@@ -146,7 +143,7 @@ class UserEmojis(
     @remove_user_emoji.error
     async def remove_user_emoji_error(self, ctx, error):
         if type(error) not in self.cog_errors:
-            logger.warning(error)
+            self.bot.logger.warning(error)
 
     ######################################################################
     #   End commands
