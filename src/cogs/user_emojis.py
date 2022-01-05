@@ -47,17 +47,6 @@ class UserEmojis(
             await ctx.send("Invalid argument. Are you sure that's an emoji?")
             return
 
-        # Checks if the user already has an emoji in this guild.
-        self.bot.cur.execute(
-            "SELECT emoji FROM emojis WHERE guild=? AND user=?;",
-            (ctx.guild.id, ctx.author.id),
-        )
-        if self.bot.cur.fetchone()[0] is not None:
-            await ctx.send(
-                "You already have an emoji! Please use '!removeUserEmoji' first."
-            )
-            return
-
         # Updates the row with the user's emoji.
         self.bot.cur.execute(
             "UPDATE emojis SET emoji=? WHERE guild=? AND user=?;",
@@ -106,42 +95,6 @@ class UserEmojis(
         if isinstance(error, commands.MemberNotFound):
             await ctx.send("I couldn't find that user...")
         elif type(error) not in self.cog_errors:
-            self.bot.logger.warning(error)
-
-    ######################################################################
-    #   !removeUserEmoji
-    ######################################################################
-    @commands.command(name="removeUserEmoji")
-    async def remove_user_emoji(self, ctx):
-        """
-        Removes your assigned emoji
-
-        * This is a SERVER-ONLY command.
-        """
-        # Checks if the user doesn't have an emoji.
-        self.bot.cur.execute(
-            "SELECT emoji FROM emojis WHERE guild=? AND user=?;",
-            (ctx.guild.id, ctx.author.id),
-        )
-        if self.bot.cur.fetchone()[0] is None:
-            await ctx.send("You don't have an emoji to remove!")
-            return
-
-        # Removes the user's emoji from the row.
-        self.bot.cur.execute(
-            "UPDATE emojis SET emoji=NULL WHERE guild=? AND user=?;",
-            (ctx.guild.id, ctx.author.id),
-        )
-
-        self.bot.conn.commit()
-
-        # Reacts to the user's message.
-        await self.bot.bot_react(ctx.message)
-
-    # No explicitly caught exceptions.
-    @remove_user_emoji.error
-    async def remove_user_emoji_error(self, ctx, error):
-        if type(error) not in self.cog_errors:
             self.bot.logger.warning(error)
 
     ######################################################################

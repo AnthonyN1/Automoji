@@ -35,16 +35,6 @@ class Quotes(commands.Cog, command_attrs=dict(ignore_extra=False)):
 
         * This is a SERVER-ONLY command.
         """
-        # Checks if the channel is already set.
-        self.bot.cur.execute(
-            "SELECT channel FROM quote_channels WHERE guild=?;", (ctx.guild.id,)
-        )
-        if self.bot.cur.fetchone()[0] is not None:
-            await ctx.send(
-                "The quote channel is already set! Try removing the channel."
-            )
-            return
-
         # Searches for the channel.
         quote_channel = None
         for c in ctx.guild.text_channels:
@@ -57,15 +47,18 @@ class Quotes(commands.Cog, command_attrs=dict(ignore_extra=False)):
                 quote_channel = c
 
         # If the channel is not found, sends an error message.
-        # Else, updates the row in the table.
         if quote_channel == None:
             await ctx.send(f"Invalid argument. Are you sure that's a channel?")
             return
-        else:
-            self.bot.cur.execute(
-                "UPDATE quote_channels SET channel=? WHERE guild=?;",
-                (quote_channel.id, ctx.guild.id),
-            )
+
+        # Updates the row in the table.
+        self.bot.cur.execute(
+            "UPDATE quote_channels SET channel=? WHERE guild=?;",
+            (quote_channel.id, ctx.guild.id),
+        )
+
+        # Deletes the previous quotes from the table.
+        self.bot.cur.execute("DELETE FROM quotes WHERE guild=?", (ctx.guild.id,))
 
         # Gets all the quotes in the channel.
         async for m in quote_channel.history():
@@ -83,40 +76,6 @@ class Quotes(commands.Cog, command_attrs=dict(ignore_extra=False)):
     # No explicitly caught exceptions.
     @set_quote_channel.error
     async def set_quote_channel_error(self, ctx, error):
-        if type(error) not in self.cog_errors:
-            self.bot.logger.warning(error)
-
-    ######################################################################
-    #   !removeQuoteChannel
-    ######################################################################
-    @commands.command(name="removeQuoteChannel")
-    async def remove_quote_channel(self, ctx):
-        """
-        Forgets the channel that Automoji looks at for quotes
-
-        * This is a SERVER-ONLY command.
-        """
-        # Sends an error message if the channel isn't set.
-        self.bot.cur.execute(
-            "SELECT channel FROM quote_channels WHERE guild=?;", (ctx.guild.id,)
-        )
-        if self.bot.cur.fetchone()[0] is None:
-            await ctx.send("No quote channel to remove!")
-            return
-
-        # Removes the channel and all quotes.
-        self.bot.cur.execute(
-            "UPDATE quote_channels SET channel=NULL WHERE guild=?;", (ctx.guild.id,)
-        )
-        self.bot.cur.execute("DELETE FROM quotes WHERE guild=?", (ctx.guild.id,))
-
-        self.bot.conn.commit()
-
-        await self.bot.bot_react(ctx.message)
-
-    # No explicitly caught exceptions.
-    @remove_quote_channel.error
-    async def remove_quote_channel_error(self, ctx, error):
         if type(error) not in self.cog_errors:
             self.bot.logger.warning(error)
 
