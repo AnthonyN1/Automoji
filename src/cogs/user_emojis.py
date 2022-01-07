@@ -42,7 +42,7 @@ class UserEmojis(
 
         * This is a SERVER-ONLY command.
         """
-        # If 'arg' isn't an emoji, sends an error message.
+        # If 'emoji' isn't an emoji, sends an error message.
         if not self.is_emoji(emoji):
             await ctx.send("Invalid argument. Are you sure that's an emoji?")
             return
