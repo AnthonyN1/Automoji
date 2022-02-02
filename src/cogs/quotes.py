@@ -1,11 +1,7 @@
-import discord
-from discord.ext import commands
-import random
-
-from am_logging import logger
+from nextcord.ext import commands
 
 
-class Quotes(commands.Cog):
+class Quotes(commands.Cog, command_attrs=dict(ignore_extra=False)):
     def __init__(self, bot: commands.Bot):
         self.bot = bot
         self.cog_errors = (
@@ -29,26 +25,16 @@ class Quotes(commands.Cog):
         elif isinstance(error, self.cog_errors):
             await ctx.send("Invalid number of arguments.")
 
+    ######################################################################
+    #   !setQuoteChannel
+    ######################################################################
     @commands.command(name="setQuoteChannel")
     async def set_quote_channel(self, ctx, channel: str):
         """
-        Sets the channel that Automoji will look at for quotes.
+        Sets the channel that Automoji will look at for quotes
 
         * This is a SERVER-ONLY command.
         """
-        # If the guild isn't in the dictionaries yet, adds it.
-        if ctx.guild not in self.bot.quotes_channels:
-            self.bot.quotes_channels[ctx.guild] = None
-        if ctx.guild not in self.bot.quotes:
-            self.bot.quotes[ctx.guild] = list()
-
-        # If the guild already has a quote channel, sends an error message.
-        if self.bot.quotes_channels[ctx.guild] != None:
-            await ctx.send(
-                "The quote channel is already set! Try removing the channel."
-            )
-            return
-
         # Searches for the channel.
         quote_channel = None
         for c in ctx.guild.text_channels:
@@ -60,21 +46,30 @@ class Quotes(commands.Cog):
                     return
                 quote_channel = c
 
-        # If the channel is not found, sends and error message.
+        # If the channel is not found, sends an error message.
         if quote_channel == None:
-            await ctx.send(f"Sorry, {channel} is not a valid channel!")
+            await ctx.send(f"Invalid argument. Are you sure that's a channel?")
             return
 
+        # Updates the row in the table.
+        self.bot.cur.execute(
+            "UPDATE quote_channels SET channel=? WHERE guild=?;",
+            (quote_channel.id, ctx.guild.id),
+        )
+
+        # Deletes the previous quotes from the table.
+        self.bot.cur.execute("DELETE FROM quotes WHERE guild=?", (ctx.guild.id,))
+
         # Gets all the quotes in the channel.
-        quote_list = list()
         async for m in quote_channel.history():
             if m.author.id != self.bot.user.id:
-                quote_list.append(m)
+                self.bot.cur.execute(
+                    "INSERT INTO quotes VALUES (?, ?)", (ctx.guild.id, m.clean_content)
+                )
             else:
-                logger.warning(f"Omitted: {m.clean_content} from quote list")
+                self.bot.logger.warning(f"Omitted: {m.clean_content} from quote list")
 
-        self.bot.quotes_channels[ctx.guild] = quote_channel
-        self.bot.quotes[ctx.guild] = quote_list
+        self.bot.conn.commit()
 
         await self.bot.bot_react(ctx.message)
 
@@ -82,59 +77,50 @@ class Quotes(commands.Cog):
     @set_quote_channel.error
     async def set_quote_channel_error(self, ctx, error):
         if type(error) not in self.cog_errors:
-            logger.warning(error)
+            self.bot.logger.warning(error)
 
-    @commands.command(name="removeQuoteChannel")
-    async def remove_quote_channel(self, ctx):
-        """
-        Frogets the channel that Automoji looks at for quotes.
-
-        * This is a SERVER-ONLY command.
-        """
-        if (
-            ctx.guild not in self.bot.quotes_channels
-            or self.bot.quotes_channels[ctx.guild] == None
-        ):
-            await ctx.send("No quote channel to remove!")
-            return
-
-        self.bot.quotes_channels[ctx.guild] = None
-        self.bot.quotes[ctx.guild].clear()
-        await self.bot.bot_react(ctx.message)
-
-    # No explicitly caught exceptions.
-    @remove_quote_channel.error
-    async def remove_quote_channel_error(self, ctx, error):
-        if type(error) not in self.cog_errors:
-            logger.warning(error)
-
+    ######################################################################
+    #   !getQuote
+    ######################################################################
     @commands.command(name="getQuote")
     async def get_quote(self, ctx):
         """
-        Gets a random quote from the quote channel.
+        Gets a random quote from the quote channel
 
         * This is a SERVER-ONLY command.
         """
-        if (
-            ctx.guild not in self.bot.quotes_channels
-            or self.bot.quotes_channels[ctx.guild] == None
-        ):
+        # Sends an error message if the channel isn't set.
+        self.bot.cur.execute(
+            "SELECT channel FROM quote_channels WHERE guild=?;", (ctx.guild.id,)
+        )
+        if self.bot.cur.fetchone()[0] is None:
             await ctx.send("No quote channel set!")
             return
-        try:
-            random_message = random.choice(self.bot.quotes[ctx.guild])
-        except IndexError:
+
+        # Sends an error message if there are no quotes.
+        self.bot.cur.execute(
+            "SELECT COUNT(ROWID) FROM quotes WHERE guild=?;", (ctx.guild.id,)
+        )
+        if self.bot.cur.fetchone()[0] == 0:
             await ctx.send("Quotes channel contains no valid quotes!")
             return
 
-        # Sends a clean version of the message to the current channel.
-        await ctx.send(random_message.clean_content)
+        # Sends a random quote.
+        self.bot.cur.execute(
+            "SELECT quote FROM quotes WHERE guild=? ORDER BY RANDOM() LIMIT 1;",
+            (ctx.guild.id,),
+        )
+        await ctx.send(self.bot.cur.fetchone()[0])
 
     # No explicitly caught exceptions.
     @get_quote.error
     async def get_quote_error(self, ctx, error):
         if type(error) not in self.cog_errors:
-            logger.warning(error)
+            self.bot.logger.warning(error)
+
+    ######################################################################
+    #   End commands
+    ######################################################################
 
 
 # Required function for an extension.

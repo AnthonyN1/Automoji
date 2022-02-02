@@ -1,33 +1,70 @@
-import discord
-from discord.ext import commands
-import emoji
-
-from am_logging import logger
+import nextcord
+from nextcord.ext import commands
 
 
 class Automoji(commands.Bot):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        # Constructs a dictionary, where the keys are Guilds, and the values are dictionaries.
-        # In the sub-dictionaries, the keys are Members, and the values are strings that represent emojis.
-        self.user_emojis = {}
+        self.logger = kwargs["logger"]
+        self.conn = kwargs["conn"]
+        self.cur = kwargs["cur"]
 
         self.robot_emoji = "\U0001F916"
 
-        # Constructs dictionaries, where the keys and Guilds, and the values are Channels and lists, respectively.
-        self.quotes_channels = {}
-        self.quotes = {}
-
+    ######################################################################
+    #   Overridden commands
+    ######################################################################
     async def on_command_error(self, ctx, error):
         if isinstance(error, commands.CommandNotFound):
             await ctx.send(
                 "I couldn't recognize that command. Please see '!help' for a list of commands."
             )
 
-    async def on_message(self, message: discord.Message):
+    async def on_guild_join(self, guild: nextcord.Guild):
+        # Inserts the guild ID into the quote table.
+        self.cur.execute("INSERT INTO quote_channels VALUES (?, NULL);", (guild.id,))
+
+        # Inserts the guild ID and user IDs into the emojis table.
+        for m in guild.members:
+            if not m.bot:
+                self.cur.execute(
+                    "INSERT INTO emojis VALUES (?, ?, NULL);", (guild.id, m.id)
+                )
+
+        self.conn.commit()
+
+    async def on_guild_remove(self, guild: nextcord.Guild):
+        # Deletes the row containing the guild ID from the quote table.
+        self.cur.execute("DELETE FROM quote_channels WHERE guild=?;", (guild.id,))
+
+        # Deletes rows contains the guild ID from the emojis table.
+        self.cur.execute("DELETE FROM emojis WHERE guild=?;", (guild.id,))
+
+        self.conn.commit()
+
+    async def on_member_join(self, member: nextcord.Member):
+        # Inserts the member ID into the emojis table.
+        if not member.bot:
+            self.cur.execute(
+                "INSERT INTO emojis VALUES (?, ?, NULL);", (member.guild.id, member.id)
+            )
+
+        self.conn.commit()
+
+    async def on_member_remove(self, member: nextcord.Member):
+        # Deletes the row containing the member ID from the emojis table.
+        if not member.bot:
+            self.cur.execute(
+                "DELETE FROM emojis WHERE guild=? AND user=?;",
+                (member.guild.id, member.id),
+            )
+
+        self.conn.commit()
+
+    async def on_message(self, message: nextcord.Message):
         # Avoids the bot recursing through its own messages.
-        if message.author.id == self.user.id:
+        if message.author.id == self.user.id or message.author.bot:
             return
 
         # Adds a quote if sent in the quotes channel
@@ -42,58 +79,28 @@ class Automoji(commands.Bot):
     async def on_ready(self):
         print("Automoji is now online!")
 
+    ######################################################################
+    #   End overridden commands
+    ######################################################################
+
     # Reacts to a message using the robot emoji.
-    async def bot_react(self, message: discord.Message):
+    async def bot_react(self, message: nextcord.Message):
         try:
             await message.add_reaction(self.robot_emoji)
-        except discord.DiscordException as e:
-            logger.warning(e)
+        except nextcord.DiscordException as e:
+            self.logger.warning(e)
 
     # Reacts to a user's message with their emoji.
-    async def react_user_emoji(self, message: discord.Message):
-        try:
-            # Gets the user's emoji.
-            user = message.author
-            em = self.user_emojis[message.guild][user]
-        except KeyError:
-            # If the user doesn't have an emoji, don't do anything.
-            return
+    async def react_user_emoji(self, message: nextcord.Message):
+        # Gets the user's emoji.
+        self.cur.execute(
+            "SELECT emoji FROM emojis WHERE guild=? AND user=?;",
+            (message.guild.id, message.author.id),
+        )
 
-        # Reacts to the user's message with their emoji.
-        try:
-            await message.add_reaction(em)
-        except discord.DiscordException as e:
-            logger.warning(e)
-
-    # Determines if 'arg' is a valid emoji.
-    # A valid emoji can be: (1) unicode, or (2) custom to the current guild.
-    def is_emoji(self, guild: discord.Guild, arg: str):
-        # (1) Unicode emojis
-        if emoji.emoji_count(arg) == 1:
-            return True
-
-        # (2) Custom emojis in the current guild
-        if (guild != None) and (any(arg == str(em) for em in guild.emojis)):
-            return True
-
-        return False
-
-    # Adds a quote to quote list if valid
-    def add_quote(self, message: discord.Message):
-        # Checks if guild is in dictionary
-        if message.guild not in self.quotesChannels or message.guild not in self.quotes:
-            return
-
-        # Checks if quotesChannel is called and if quotes Channel is the message's channel
-        if (
-            self.quotesChannels[message.guild] == None
-            or message.channel != self.quotesChannels[message.guild]
-        ):
-            return
-
-        # Checks if the message is a valid quote
-        if message.author.id != self.user.id:
-            self.quotes[message.guild].append(message)
-        else:
-            print(f"Omitted: {message.clean_content} from quote list")
-            return
+        if (em := self.cur.fetchone()[0]) is not None:
+            # Reacts to the user's message with their emoji.
+            try:
+                await message.add_reaction(em)
+            except nextcord.DiscordException as e:
+                self.logger.warning(e)

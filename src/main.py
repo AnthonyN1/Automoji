@@ -1,19 +1,22 @@
 import decouple
-import discord
-from discord.ext import commands
+import nextcord
+from nextcord.ext import commands
 import sys
 
 from automoji import Automoji
 from am_logging import logger
+from am_db import db_conn, db_cur
 
 
 def main():
     # Gets bot intents.
-    intents = discord.Intents.default()
+    intents = nextcord.Intents.default()
     intents.members = True
 
     # Initializes the bot.
-    bot = Automoji(command_prefix="!", intents=intents)
+    bot = Automoji(
+        command_prefix="!", intents=intents, logger=logger, conn=db_conn, cur=db_cur
+    )
 
     # Loads extensions into the bot.
     extensions = ["cogs.user_emojis", "cogs.quotes"]
@@ -34,14 +37,17 @@ def main():
     try:
         bot.run(token)
     except (
-        discord.LoginFailure,
-        discord.HTTPException,
-        discord.GatewayNotFound,
-        discord.ConnectionClosed,
+        nextcord.LoginFailure,
+        nextcord.HTTPException,
+        nextcord.GatewayNotFound,
+        nextcord.ConnectionClosed,
     ) as e:
         logger.error(e)
         print("An error has occurred. See discord.log for more details.\nExiting")
         sys.exit(1)
+
+    # Closes the connection to the database.
+    db_conn.close()
 
 
 if __name__ == "__main__":
