@@ -1,3 +1,4 @@
+from email.quoprimime import quote
 import nextcord
 from nextcord.ext import commands
 
@@ -67,10 +68,9 @@ class Automoji(commands.Bot):
         if message.author.id == self.user.id or message.author.bot:
             return
 
-        # Adds a quote if sent in the quotes channel
-        if message.channel == self.quotes_channels[message.guild]:
-            self.add_quote(message)
-        
+        # Adds a message to the quote channel if set
+        await self.add_quote(message)
+
         # Reacts to the user's message with their emoji.
         await self.react_user_emoji(message)
 
@@ -104,3 +104,23 @@ class Automoji(commands.Bot):
                 await message.add_reaction(em)
             except nextcord.DiscordException as e:
                 self.logger.warning(e)
+
+    async def add_quote(self, message: nextcord.Message):
+        # Sends an error message if the channel isn't set.
+        self.cur.execute(
+            "SELECT channel FROM quote_channels WHERE guild=?;", (message.guild.id,)
+        )
+        quotechannel = self.cur.fetchone()[0]
+        if quotechannel is None:
+            return
+        elif quotechannel != message.channel.id:
+            return
+
+        # Adds quote if not sent by bot
+        if message.author.id != self.user.id:
+            self.cur.execute(
+                "INSERT INTO quotes VALUES (?, ?)",
+                (message.guild.id, message.clean_content),
+            )
+        else:
+            self.logger.warning(f"Omitted: {message.clean_content} from quote list")
