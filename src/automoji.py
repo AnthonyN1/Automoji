@@ -96,8 +96,9 @@ class Automoji(commands.Bot):
             "SELECT emoji FROM emojis WHERE guild=? AND user=?;",
             (message.guild.id, message.author.id),
         )
+        em = self.cur.fetchone()[0]
 
-        if (em := self.cur.fetchone()[0]) is not None:
+        if em is not None:
             # Reacts to the user's message with their emoji.
             try:
                 await message.add_reaction(em)
