@@ -1,4 +1,3 @@
-from email.quoprimime import quote
 import nextcord
 from nextcord.ext import commands
 
@@ -117,10 +116,8 @@ class Automoji(commands.Bot):
             return
 
         # Adds quote if not sent by bot
-        if message.author.id != self.user.id:
-            self.cur.execute(
-                "INSERT INTO quotes VALUES (?, ?)",
-                (message.guild.id, message.clean_content),
-            )
-        else:
-            self.logger.warning(f"Omitted: {message.clean_content} from quote list")
+        self.cur.execute(
+            "INSERT INTO quotes VALUES (?, ?)",
+            (message.guild.id, message.clean_content),
+        )
+        self.conn.commit()
