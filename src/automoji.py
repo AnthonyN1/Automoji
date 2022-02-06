@@ -67,7 +67,7 @@ class Automoji(commands.Bot):
         if message.author.id == self.user.id or message.author.bot:
             return
 
-        # Adds a message to the quote channel if set
+        # Adds a message from the quote channel to the quotes table if set.
         await self.add_quote(message)
 
         # Reacts to the user's message with their emoji.
@@ -105,8 +105,9 @@ class Automoji(commands.Bot):
             except nextcord.DiscordException as e:
                 self.logger.warning(e)
 
+    # Adds a message from the quote channel to the quotes table if set.
     async def add_quote(self, message: nextcord.Message):
-        # Sends an error message if the channel isn't set.
+        # Returns if the quote channel isn't set.
         self.cur.execute(
             "SELECT channel FROM quote_channels WHERE guild=?;", (message.guild.id,)
         )
@@ -116,9 +117,10 @@ class Automoji(commands.Bot):
         elif quotechannel != message.channel.id:
             return
 
-        # Adds quote if not sent by bot
+        # Adds the message to the table.
         self.cur.execute(
             "INSERT INTO quotes VALUES (?, ?)",
             (message.guild.id, message.clean_content),
         )
+
         self.conn.commit()
