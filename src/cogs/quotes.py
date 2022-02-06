@@ -4,11 +4,7 @@ from nextcord.ext import commands
 class Quotes(commands.Cog, command_attrs=dict(ignore_extra=False)):
     def __init__(self, bot: commands.Bot):
         self.bot = bot
-        self.cog_errors = (
-            commands.NoPrivateMessage,
-            commands.MissingRequiredArgument,
-            commands.TooManyArguments,
-        )
+        self.cog_errors = (commands.NoPrivateMessage, commands.UserInputError)
 
     # Registers as a commands.Check() to all commands in this Cog.
     def cog_check(self, ctx):
@@ -23,7 +19,7 @@ class Quotes(commands.Cog, command_attrs=dict(ignore_extra=False)):
         if isinstance(error, commands.NoPrivateMessage):
             await ctx.send("That command doesn't work in DMs!")
         elif isinstance(error, self.cog_errors):
-            await ctx.send("Invalid number of arguments.")
+            await self.bot.invalid_react(ctx.message)
 
     ######################################################################
     #   !setQuoteChannel
@@ -40,16 +36,12 @@ class Quotes(commands.Cog, command_attrs=dict(ignore_extra=False)):
         for c in ctx.guild.text_channels:
             if channel == c.name:
                 if quote_channel != None:
-                    await ctx.send(
-                        "There are multiple channels with that name! Maybe rename one?"
-                    )
-                    return
+                    raise commands.UserInputError
                 quote_channel = c
 
         # If the channel is not found, sends an error message.
         if quote_channel == None:
-            await ctx.send(f"Invalid argument. Are you sure that's a channel?")
-            return
+            raise commands.UserInputError
 
         # Updates the row in the table.
         self.bot.cur.execute(
@@ -94,16 +86,14 @@ class Quotes(commands.Cog, command_attrs=dict(ignore_extra=False)):
             "SELECT channel FROM quote_channels WHERE guild=?;", (ctx.guild.id,)
         )
         if self.bot.cur.fetchone()[0] is None:
-            await ctx.send("No quote channel set!")
-            return
+            raise commands.UserInputError
 
         # Sends an error message if there are no quotes.
         self.bot.cur.execute(
             "SELECT COUNT(ROWID) FROM quotes WHERE guild=?;", (ctx.guild.id,)
         )
         if self.bot.cur.fetchone()[0] == 0:
-            await ctx.send("Quotes channel contains no valid quotes!")
-            return
+            raise commands.UserInputError
 
         # Sends a random quote.
         self.bot.cur.execute(

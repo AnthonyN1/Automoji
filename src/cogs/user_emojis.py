@@ -9,11 +9,7 @@ class UserEmojis(
 ):
     def __init__(self, bot: commands.Bot):
         self.bot = bot
-        self.cog_errors = (
-            commands.NoPrivateMessage,
-            commands.MissingRequiredArgument,
-            commands.TooManyArguments,
-        )
+        self.cog_errors = (commands.NoPrivateMessage, commands.UserInputError)
 
     # Registers as a commands.Check() to all commands in this Cog.
     def cog_check(self, ctx):
@@ -28,7 +24,7 @@ class UserEmojis(
         if isinstance(error, commands.NoPrivateMessage):
             await ctx.send("That command doesn't work in DMs!")
         elif isinstance(error, self.cog_errors):
-            await ctx.send("Invalid number of arguments.")
+            await self.bot.invalid_react(ctx.message)
 
     ######################################################################
     #   !addUserEmoji
@@ -44,8 +40,7 @@ class UserEmojis(
         """
         # If 'emoji' isn't an emoji, sends an error message.
         if not self.is_emoji(emoji):
-            await ctx.send("Invalid argument. Are you sure that's an emoji?")
-            return
+            raise commands.UserInputError
 
         # Updates the row with the user's emoji.
         self.bot.cur.execute(

@@ -11,6 +11,7 @@ class Automoji(commands.Bot):
         self.cur = kwargs["cur"]
 
         self.robot_emoji = "\U0001F916"
+        self.question_emoji = "\U00002753"
 
     ######################################################################
     #   Overridden commands
@@ -83,6 +84,13 @@ class Automoji(commands.Bot):
     async def bot_react(self, message: nextcord.Message):
         try:
             await message.add_reaction(self.robot_emoji)
+        except nextcord.DiscordException as e:
+            self.logger.warning(e)
+
+    # Reacts to a message using the question mark emoji.
+    async def invalid_react(self, message: nextcord.Message):
+        try:
+            await message.add_reaction(self.question_emoji)
         except nextcord.DiscordException as e:
             self.logger.warning(e)
 
